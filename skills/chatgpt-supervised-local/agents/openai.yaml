@@ -1,4 +1,4 @@
 interface:
-  display_name: "Astra 本地浏览器"
+  display_name: "SelfGuide 本地浏览器"
   short_description: "让自己的网页版 ChatGPT 指导服务器 Codex 执行、反馈与验收任务"
   default_prompt: "使用 $chatgpt-supervised-local，在 astra 项目创建专用会话，按网页版反馈执行我的任务。"

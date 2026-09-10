@@ -6,7 +6,7 @@
 
 用户选择的版本已经明确时直接执行；本地版和服务器版的 Codex 都运行在当前连接的服务器上。没有明确版本时检查用户上下文和现有浏览器部署，无法判断才问一次。
 
-本仓库为公开的 MIT 开源仓库。直接使用 `git clone https://github.com/JackBo04/astra-skill-kit.git <目标目录>` 下载，无需用户提供 GitHub 授权。已存在的正确仓库先检查工作树，不覆盖用户修改，不强制重置；记录所用提交。用户提供发行包时也可从解压目录安装。
+本仓库为公开的 MIT 开源仓库。直接使用 `git clone https://github.com/JackBo04/selfguide.git <目标目录>` 下载，无需用户提供 GitHub 授权。已存在的正确仓库先检查工作树，不覆盖用户修改，不强制重置；记录所用提交。用户提供发行包时也可从解压目录安装。
 
 读取本仓库 README、本文、所选 `docs/server-browser.md` 或 `docs/local-browser.md`、对应 `skills/chatgpt-supervised-<版本>/SKILL.md`。同时遵守当前工作区已有指令。
 
@@ -67,7 +67,7 @@ python3 ~/.agents/skills/chatgpt-supervised-local/scripts/bridge.py serve
 
 在服务器可执行部分完成后，一次性给用户以下信息：
 
-1. [本地版发布包下载页](https://github.com/JackBo04/astra-skill-kit/releases)，解压后要选其中的 `extension/` 文件夹。
+1. [本地版发布包下载页](https://github.com/JackBo04/selfguide/releases)，解压后要选其中的 `extension/` 文件夹。
 2. 可复制的 SSH 转发命令，使用用户实际 SSH 别名、目标地址或已知跳板配置。仅仅知道服务器主机名不代表它是用户电脑可达的地址；这项信息未知时才询问。
 3. Chrome／Edge 加载扩展、打开正确 astra 项目并绑定当前标签页的步骤。
 4. 用户在自己服务器终端运行 `bridge.py pairing` 查看配对信息的方法。配对码填扩展，不发到 ChatGPT、不写入提交或公开报告。

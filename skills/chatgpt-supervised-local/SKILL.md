@@ -1,6 +1,6 @@
 ---
 name: chatgpt-supervised-local
-description: 使用用户电脑上的 ChatGPT 浏览器指导连接到服务器的 Codex 执行、上传材料、反馈结果并评审；用于本地浏览器与 astra 协作项目，服务器浏览器请使用另一版本。
+description: SelfGuide：使用用户电脑上的 ChatGPT 浏览器指导连接到服务器的 Codex 执行、上传材料、反馈结果并评审；用于本地浏览器与 astra 协作项目，服务器浏览器请使用另一版本。
 ---
 
 # 本地浏览器指导服务器执行

@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="docs/assets/hero.svg" alt="Astra — Plan in ChatGPT. Build with Codex." width="100%">
+  <img src="docs/assets/hero.svg" alt="SelfGuide — Guide. Act. Reflect." width="100%">
 </p>
 
 <p align="center">
-  <strong>网页版主导，服务器上的 Codex 执行。</strong><br>
-  从方案、取证到执行与验收，把网页指导接进真实工作流。
+  <strong>自己指导，自己执行，持续改进。</strong><br>
+  ChatGPT 主导 · Codex 执行 · 真实反馈驱动下一步
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-9ff6dd?style=flat-square&amp;labelColor=182338" alt="License: MIT"></a>
-  <a href="https://github.com/JackBo04/astra-skill-kit/releases"><img src="https://img.shields.io/badge/Release-v0.1.3%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.1.3 Preview"></a>
+  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.2.0%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.2.0 Preview"></a>
   <a href="docs/server-browser.md"><img src="https://img.shields.io/badge/Python-3.10%2B-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Python 3.10 or newer"></a>
   <a href="docs/local-browser.md"><img src="https://img.shields.io/badge/Browser-Chrome%20%2F%20Edge-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Local browser: Chrome or Edge"></a>
 </p>
@@ -17,16 +17,16 @@
 <p align="center">
   <a href="#quickstart">快速开始</a> ·
   <a href="docs/agent-install.md">Agent 安装规范</a> ·
-  <a href="https://github.com/JackBo04/astra-skill-kit/releases">下载安装包</a> ·
+  <a href="https://github.com/JackBo04/selfguide/releases">下载安装包</a> ·
   <a href="docs/validation.md">验证记录</a> ·
-  <a href="https://github.com/JackBo04/astra-skill-kit/issues">反馈问题</a>
+  <a href="https://github.com/JackBo04/selfguide/issues">反馈问题</a>
 </p>
 
 ---
 
-## 把「给建议」接到「做完事」
+## 让下一步，来自上一步的真实结果
 
-**Astra 是连接网页版 ChatGPT 与服务器 Codex 的开源 skill 工具包。** 你给出目标和验收标准，网页版负责方案、信息需求和关键决策；Codex 从真实环境取证，执行步骤，独立验证，再把文件与结果交回网页评审。
+**SelfGuide 把指导、执行和反馈组织成一个持续运行的协作循环。** 你给出目标和验收标准，网页版负责方案、信息需求和关键决策；Codex 从真实环境取证，执行步骤，独立验证，再把文件与结果交回网页评审。
 
 缺少一份日志？网页版向 Codex 提出需求，Codex 读取并补充。实验结果与预期不符？上传实际证据，让网页版据此更新方案。整个过程围绕同一个任务持续推进，需要你提供独有信息或作出关键决定时再交给你。
 
@@ -35,13 +35,13 @@
 | 方案、追问、关键取舍和验收由网页版主导 | Codex 读取实际文件，提交真实附件和独立验证结果 | 每个任务保存会话地址、完整收发和发送状态 |
 | 默认网页版 **xhigh**，难题按需选择 **Pro** | 工作始终在你选定连接的服务器上完成 | 中断后核对原会话和记录，避免盲目重复发送 |
 
-## 一个任务，一条持续反馈的会话
+## 自指导循环如何工作
 
 <p align="center">
   <img src="docs/assets/workflow.svg" alt="用户定义任务，ChatGPT 指导，服务器 Codex 执行，验证结果返回网页继续评审。" width="100%">
 </p>
 
-每个新任务都在你的 ChatGPT **astra** 项目中新建专用会话。方案、补充信息、执行问题和结果评审沿用这条会话，服务器同步保存任务档案。
+每个新任务都在配置的 ChatGPT 项目中新建专用会话（现有部署名为 **astra**）。方案、补充信息、执行问题和结果评审沿用这条会话，服务器同步保存任务档案。
 
 **已有真实验证：** 合成 TXT 上传 → 网页读出附件独有随机码 → 指导生成 JSON → Codex 独立核对 → JSON 结果回传 → 网页验收通过。[查看验证范围 →](docs/validation.md)
 
@@ -72,7 +72,7 @@
 
 ```text
 请在当前连接的服务器上安装并配置：
-https://github.com/JackBo04/astra-skill-kit
+https://github.com/JackBo04/selfguide
 
 选择 server 版本，先读取 README.md 和 docs/agent-install.md，按规范执行。
 复用已有 astra 项目、浏览器和登录状态，完成安装、配置及合成附件的真实验收。
@@ -84,7 +84,7 @@ https://github.com/JackBo04/astra-skill-kit
 
 ```text
 请在当前连接的服务器上安装并配置：
-https://github.com/JackBo04/astra-skill-kit
+https://github.com/JackBo04/selfguide
 
 选择 local 版本，先读取 README.md 和 docs/agent-install.md，按规范执行。
 Codex 继续在服务器干活，ChatGPT 使用我电脑上的 Chrome／Edge。
@@ -101,17 +101,17 @@ Codex 继续在服务器干活，ChatGPT 使用我电脑上的 Chrome／Edge。
 在服务器终端运行。公开仓库无需 GitHub 登录；需要 Git 和 Python 3.10+。
 
 ```bash
-git clone https://github.com/JackBo04/astra-skill-kit.git
-cd astra-skill-kit
+git clone https://github.com/JackBo04/selfguide.git
+cd selfguide
 
 # 二选一
 python3 tools/install.py server
 python3 tools/install.py local
 ```
 
-也可从 [Releases](https://github.com/JackBo04/astra-skill-kit/releases) 下载对应 ZIP，解压后执行包内 `tools/install.py`。
+也可从 [Releases](https://github.com/JackBo04/selfguide/releases) 下载对应 ZIP，解压后执行包内 `tools/install.py`。
 
-安装器默认写入 `~/.agents/skills/`，不覆盖同名安装。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
+SelfGuide 延续已有的 `$chatgpt-supervised-server` 和 `$chatgpt-supervised-local` 调用名；聊天项目 `astra`、任务目录与登录配置也沿用现有部署。安装器默认写入 `~/.agents/skills/`，不覆盖同名安装。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
 
 </details>
 
@@ -142,9 +142,9 @@ python3 tools/install.py local
 
 **档位策略：网页版默认 xhigh（Extra High），明显困难的推理问题按需选择网页版 Pro。** 这个判断由 Codex 处理，不修改 Codex 自身的模型或推理档位，也不代表升级订阅。服务器版通过可见网页控件操作；本地扩展尚无自动切档命令，需要本地用户或可用的本地操作工具配合。
 
-[阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/astra-skill-kit/blob/main/skills/chatgpt-supervised-server/references/leadership.md)
+[阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/selfguide/blob/main/skills/chatgpt-supervised-server/references/leadership.md)
 
-## 结果留在服务器，过程有迹可查
+## 每一步，都留下可追溯的证据
 
 ```text
 astra/
@@ -192,7 +192,7 @@ astra/
 
 ## 参与改进
 
-欢迎通过 [Issues](https://github.com/JackBo04/astra-skill-kit/issues) 提交可复现的问题，或通过 Pull Request 改进实现。以下方向尤其有帮助：
+欢迎通过 [Issues](https://github.com/JackBo04/selfguide/issues) 提交可复现的问题，或通过 Pull Request 改进实现。以下方向尤其有帮助：
 
 - **页面适配：** 网页输入框、附件卡片、回复完成标记与档位控件。
 - **本地版验证：** 不同系统的 Chrome／Edge、SSH 连接及真实账户联调。

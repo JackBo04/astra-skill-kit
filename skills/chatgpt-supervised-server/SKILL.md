@@ -1,6 +1,6 @@
 ---
 name: chatgpt-supervised-server
-description: 在服务器专用浏览器中用用户自己的 ChatGPT 指导 Codex 执行、上传材料、反馈和验收；适用于服务器浏览器及 astra 项目协作，本地电脑浏览器请使用另一版本。
+description: SelfGuide：在服务器专用浏览器中用用户自己的 ChatGPT 指导 Codex 执行、上传材料、反馈和验收；适用于服务器浏览器及 astra 项目协作，本地电脑浏览器请使用另一版本。
 ---
 
 # 网页版指导执行
