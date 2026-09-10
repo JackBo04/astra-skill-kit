@@ -28,6 +28,34 @@ def text_file(path):
         raise ValueError('The message or note cannot be empty.')
     return text
 
+
+def reply_markers(state, number):
+    suffix = f"task={state['id']} round={number}"
+    return 'SELFGUIDE_REPLY_BEGIN ' + suffix, 'SELFGUIDE_REPLY_END ' + suffix
+
+def reply_instruction(state, number):
+    begin, end = reply_markers(state, number)
+    return ("\n\n[SelfGuide 文本交接要求]\n"
+            "请把本轮完整反馈放在一个可一键复制的 text 代码块里，块外不放执行所需内容。\n"
+            "在下列首尾标记之间写清：信息需求、下一步动作、验证要求或验收结论。\n"
+            "不要省略代码、路径、条件；代码块内部不再使用三反引号。\n"
+            "长文件可另附真实下载文件，但在此块中注明用途；无法生成附件就提供完整文本。\n"
+            + begin + "\n<完整反馈正文>\n" + end + "\n")
+
+def validate_reply(text, state):
+    lines = text.strip().splitlines()
+    if lines and lines[0].strip() in ['```', '```text', '```plaintext']:
+        if len(lines) < 2 or lines[-1].strip() != '```':
+            raise ValueError('Reply has an unfinished code fence; copy the complete reply again.')
+        lines = lines[1:-1]
+    begin, end = reply_markers(state, state['round'])
+    if len(lines) < 3 or lines[0].strip() != begin or lines[-1].strip() != end:
+        raise ValueError('Reply task/round markers are missing or mismatched; check the current reply and copy again.')
+    body = '\n'.join(lines[1:-1]).strip()
+    if not body or body == '<完整反馈正文>' or any(
+            line.startswith(('SELFGUIDE_REPLY_BEGIN ', 'SELFGUIDE_REPLY_END ')) for line in lines[1:-1]):
+        raise ValueError('Reply body is empty, a placeholder, or contains mixed handoffs.')
+
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
@@ -38,6 +66,9 @@ def main():
         item = sub.add_parser(action); item.add_argument('--run', type=Path, required=True)
         if action in ['stage', 'prepare', 'reply']:
             item.add_argument('--file', type=Path, required=True)
+        if action == 'reply':
+            item.add_argument('--source', choices=['clipboard', 'dom', 'download'])
+            item.add_argument('--format-note-file', type=Path)
         if action == 'sent':
             item.add_argument('--url', required=True)
         if action == 'checkpoint':
@@ -58,7 +89,7 @@ def main():
         (run / 'task.txt').write_text(task)
         state = {'id': run.name, 'project_name': 'astra', 'project_url': project['url'],
                  'conversation_url': None, 'phase': 'ready', 'round': 0, 'rounds': [],
-                 'created_at': now(), 'events': [], 'layout_version': 2}
+                 'created_at': now(), 'events': [], 'layout_version': 2, 'reply_format': 'selfguide-text-v1'}
         save(run / 'state.json', state)
         print(json.dumps({'run': str(run), 'project_url': project['url']}))
         return
@@ -100,6 +131,8 @@ def main():
             if state['phase'] not in ['ready', 'executing']:
                 raise ValueError('Resolve the previous handoff first; do not duplicate an uncertain send.')
             text = text_file(args.file)
+            if state.get('reply_format') == 'selfguide-text-v1':
+                text += reply_instruction(state, state['round'] + 1)
             if len(text.encode()) > 65536:
                 raise ValueError('Split this message into task-relevant portions of at most 64 KB.')
             state['round'] += 1
@@ -130,10 +163,23 @@ def main():
             if state['phase'] != 'waiting_reply':
                 raise ValueError('Record a confirmed send before accepting its reply.')
             text = text_file(args.file)
+            metadata = {'incoming_source': args.source or 'legacy-unspecified'}
+            if state.get('reply_format') == 'selfguide-text-v1':
+                if not args.source:
+                    raise ValueError('Declare the actual text source: --source clipboard, dom, or download. OCR is not a reply source.')
+                try:
+                    validate_reply(text, state)
+                    metadata['reply_format_valid'] = True
+                except ValueError as error:
+                    if not args.format_note_file:
+                        raise
+                    metadata.update({'reply_format_valid': False, 'format_error': str(error),
+                                     'format_review_note': text_file(args.format_note_file)})
             name = ('feedback/' if state.get('layout_version', 1) >= 2 else '') + f"in-{state['round']:03}.txt"
             (run / name).write_text(text)
             state['rounds'][-1].update({'incoming': name, 'incoming_sha256': hashlib.sha256(text.encode()).hexdigest(),
                                         'received_at': now()})
+            state['rounds'][-1].update(metadata)
             state['phase'] = 'executing'
             result['file'] = str(run / name)
         elif args.action == 'checkpoint':

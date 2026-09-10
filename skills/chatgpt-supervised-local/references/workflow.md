@@ -20,8 +20,8 @@ python <skill>/scripts/session.py submitting --run <run>
 python <skill>/scripts/bridge.py send --file <run>/messages/out-001.txt --expect-url <网页实际URL> --out <run>/checks/send-001.json
 python <skill>/scripts/session.py sent --run <run> --url <send结果中的会话URL>
 python <skill>/scripts/bridge.py reply --file <run>/messages/out-001.txt --expect-url <会话URL> --out <run>/checks/reply-001.json
-# 将上一步 JSON 的 result.text 保存为普通 UTF-8 文件，然后登记：
-python <skill>/scripts/session.py reply --run <run> --file <回复.txt>
+# 保留上一步 JSON，核对完整 result.text；优先保存 result.handoff_text（否则 result.text）为 UTF-8 文件：
+python <skill>/scripts/session.py reply --run <run> --file <回复.txt> --source dom
 python <skill>/scripts/session.py checkpoint --run <run> --phase complete --note-file <验收说明.txt>
 ```
 

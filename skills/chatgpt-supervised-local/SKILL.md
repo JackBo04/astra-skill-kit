@@ -7,6 +7,10 @@ description: SelfGuide：使用用户电脑上的 ChatGPT 浏览器指导连接�
 
 Codex 始终在当前连接的服务器上执行任务。本地浏览器扩展只在用户明确绑定的 astra 标签页收发。读取 [连接和操作](references/workflow.md) 后使用脚本；用户初次安装步骤在发行包的 `docs/local-browser.md`。
 
+## 回复正文：优先复制，保存原文
+
+读取 [完整文本交接](references/text-handoff.md)。截图只用于操作与状态确认，反馈正文从复制按钮、网页 DOM 或实际下载文件获取；不以截图识字代替完整回复。`session.py prepare` 会给新任务追加可复制文本块及任务／轮次标记要求，必须发送其返回的文件；接收时用 `session.py reply --source clipboard|dom|download` 登记原文并检查。长文件按需作为补充。
+
 ## 主导关系与网页档位
 
 先读取 [网页主导与档位规则](references/leadership.md)。网页版主导方案、信息需求、关键决策和验收；Codex 按指导取证、补充、执行和验证。缺失信息由网页版向 Codex 提问，能够从环境取得的内容由 Codex 自行补齐。默认网页版 xhigh 档位，明显需要更强推理时由 Codex 判断切到网页版 Pro 档位；Codex 自身模型和推理档位保持不变；核对实际选择并记录切换，不能仅凭提示文字声称生效。
@@ -24,7 +28,7 @@ Codex 始终在当前连接的服务器上执行任务。本地浏览器扩展�
 2. 通过 `bridge.py project` 回到项目页；此操作检查现有页面没有草稿或未完成生成。等 `snapshot` 确认输入框可用，再整理首轮消息和选定材料。
 3. `session.py stage` 暂存附件，清单记录源路径、大小和摘要。`bridge.py attach` 传送服务器文件到本地扩展，扩展填入网页附件。返回 `file_paste_requested` 只表示已尝试；须确认可见附件卡片及上传状态，无法确认时让用户查看一次页面，不能称为已上传。
 4. `session.py prepare` 保存消息；`bridge.py compose` 填草稿并保存检查结果。核对草稿文字、页面和附件；`session.py submitting` 后才 `bridge.py send`。只有返回 `sent:true` 且会话地址在同一项目内，才 `session.py sent`。
-5. 等 `snapshot` 显示生成结束，再 `bridge.py reply --file <本轮出站文字>`，它检查最近用户消息对应本轮、回复在其之后且有完成标记。将返回的 `result.text` 保存为 UTF-8 文本，用 `session.py reply` 登记。
+5. 等 `snapshot` 显示生成结束，再 `bridge.py reply --file <本轮出站文字>`，它检查最近用户消息对应本轮、回复在其之后且有完成标记。保留返回 JSON，优先将 `result.handoff_text`（无此字段则用 `result.text`）原样保存为 UTF-8 文本，同时核对块外信息，用 `session.py reply --source dom` 登记。
 6. 根据完整回复执行可行建议，实际验证后提供精确证据，请网页版评审。存在疑问时发错误与现场上下文继续交流；日常实现和可逆修复自行处理。
 7. 持续到原任务的实际验收标准满足，并得到网页评审结论；保存完成检查点后交付。网页新增的无关方向不自动扩展任务。
 

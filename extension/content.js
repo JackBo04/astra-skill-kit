@@ -42,7 +42,10 @@
       if (!turn?.querySelector('[data-testid="copy-turn-action-button"],button[aria-label*="Copy"],button[aria-label*="复制"]')) throw Error('回复完成标记尚未出现；稍后再检查。');
       await pause(700);
       if (stop() || text(last) !== state.last_reply) throw Error('回复仍在变化，请继续等待。');
-      return {url:state.url,text:state.last_reply,complete:true};
+      const blocks = [...last.querySelectorAll('pre code')].map(el => el.textContent);
+      const handoffs = blocks.filter(value => value.trim().startsWith('SELFGUIDE_REPLY_BEGIN '));
+      return {url:state.url,text:state.last_reply,complete:true,
+        ...(handoffs.length === 1 ? {handoff_text:handoffs[0]} : {})};
     }
     if (stop()) throw Error('当前回复仍在生成。');
     if (command.action === 'compose') {

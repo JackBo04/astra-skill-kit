@@ -67,6 +67,17 @@ try{
  const sent=await command('send',{text});assert.equal(sent.sent,true);assert.ok(sent.url.includes('/c/'));
  await wait(700);
  const reply=await command('reply',{text});assert.equal(reply.complete,true);assert.ok(reply.text.includes(bytes.toString()));
+ const handoff='SELFGUIDE_REPLY_BEGIN task=fixture round=1\n路径 /tmp/a_b；原文 <value> & 中文\nSELFGUIDE_REPLY_END task=fixture round=1';
+ await page.evaluate(value=>{
+  const assistant=document.querySelector('[data-message-author-role="assistant"]');
+  assistant.textContent='请同时核对这段块外说明。';
+  const pre=document.createElement('pre'), toolbar=document.createElement('button'),code=document.createElement('code');
+  toolbar.textContent='text Copy code';code.textContent=value;pre.append(toolbar,code);assistant.append(pre);
+ },handoff);
+ const structured=await command('reply',{text});
+ assert.equal(structured.handoff_text,handoff);
+ assert.ok(structured.text.includes('块外说明'));
+ assert.ok(structured.text.includes('Copy code'));
  await command('project');await page.waitForURL(project);
  assert.equal((await command('snapshot')).user_count,0);
  console.log('PASS: real extension service worker + content script + HTTP broker; snapshot, file bytes/hash, compose, send confirmation, reply matching and project navigation on controlled fixture.');

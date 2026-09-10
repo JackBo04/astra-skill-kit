@@ -36,8 +36,42 @@ class SessionTest(unittest.TestCase):
     call('checkpoint','--run',run,'--phase','paused','--note-file',task)
     call('resume','--run',run);self.assertEqual(call('status','--run',run)['phase'],'send_pending')
     call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-astra/c/123')
-    call('reply','--run',run,'--file',task)
+    self.assertIn(f'SELFGUIDE_REPLY_END task={run.name} round=1', (run/'messages/out-001.txt').read_text())
+    reply=root/'reply.txt'
+    body='信息需求：读取 config.json\n下一步：检查 /tmp/a_b；保留反斜杠 \\ 和中文。\n验证：输出应等于 31。'
+    def envelope(task_id=run.name, number=1):
+     return f'SELFGUIDE_REPLY_BEGIN task={task_id} round={number}\n{body}\nSELFGUIDE_REPLY_END task={task_id} round={number}'
+    for bad in [envelope('wrong'),envelope(number=2),envelope().rsplit('\n',1)[0], '识图摘要']:
+     reply.write_text(bad)
+     call('reply','--run',run,'--file',reply,'--source','clipboard',ok=False)
+     self.assertEqual(call('status','--run',run)['phase'],'waiting_reply')
+     self.assertFalse((run/'feedback/in-001.txt').exists())
+    reply.write_text('```text\n'+envelope()+'\n```\n')
+    call('reply','--run',run,'--file',reply,ok=False)
+    call('reply','--run',run,'--file',reply,'--source','ocr',ok=False)
+    call('reply','--run',run,'--file',reply,'--source','clipboard')
     self.assertTrue((run/'feedback/in-001.txt').exists())
+    self.assertEqual((run/'feedback/in-001.txt').read_bytes(),reply.read_bytes())
+    incoming=call('status','--run',run)['rounds'][-1]
+    self.assertTrue(incoming['reply_format_valid'])
+    self.assertEqual(incoming['incoming_sha256'],hashlib.sha256(reply.read_bytes()).hexdigest())
+    self.assertEqual(incoming['incoming_source'],'clipboard')
+    call('prepare','--run',run,'--file',task);call('submitting','--run',run)
+    call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-astra/c/123')
+    reply.write_text('完整 DOM 原文，但网页未遵守格式。')
+    note=root/'review.txt';note.write_text('核对本轮用户消息和 DOM 生成结束状态，完整正文已取得。')
+    call('reply','--run',run,'--file',reply,'--source','dom','--format-note-file',note)
+    incoming=call('status','--run',run)['rounds'][-1]
+    self.assertFalse(incoming['reply_format_valid'])
+    self.assertEqual(incoming['format_review_note'],note.read_text())
+    # Existing flat-layout tasks remain resumable without the new reply contract.
+    legacy=Path(call('new','--task-file',task,'--workspace',root/'legacy')['run'])
+    state=json.loads((legacy/'state.json').read_text());state.pop('reply_format');state.pop('layout_version')
+    (legacy/'state.json').write_text(json.dumps(state))
+    call('prepare','--run',legacy,'--file',task);call('submitting','--run',legacy)
+    call('sent','--run',legacy,'--url','https://chatgpt.com/g/g-p-test-astra/c/456')
+    call('reply','--run',legacy,'--file',task)
+    self.assertEqual((legacy/'in-001.txt').read_text(),task.read_text())
     call('checkpoint','--run',run,'--phase','complete','--note-file',task)
     call('prepare','--run',run,'--file',task,ok=False)
 

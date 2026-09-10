@@ -41,7 +41,7 @@ python <skill>/scripts/session.py stage --run <run> --file <selected-source-file
 python <skill>/scripts/session.py prepare --run <run> --file <message.txt>
 python <skill>/scripts/session.py submitting --run <run>
 python <skill>/scripts/session.py sent --run <run> --url <conversation-url>
-python <skill>/scripts/session.py reply --run <run> --file <reply.txt>
+python <skill>/scripts/session.py reply --run <run> --file <reply.txt> --source clipboard
 python <skill>/scripts/session.py checkpoint --run <run> --phase executing --note-file <progress.txt>
 python <skill>/scripts/session.py checkpoint --run <run> --phase waiting_user --note-file <blocking-issue.txt>
 python <skill>/scripts/session.py resume --run <run>

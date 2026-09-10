@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-9ff6dd?style=flat-square&amp;labelColor=182338" alt="License: MIT"></a>
-  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.2.0%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.2.0 Preview"></a>
+  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.2.1%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.2.1 Preview"></a>
   <a href="docs/server-browser.md"><img src="https://img.shields.io/badge/Python-3.10%2B-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Python 3.10 or newer"></a>
   <a href="docs/local-browser.md"><img src="https://img.shields.io/badge/Browser-Chrome%20%2F%20Edge-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Local browser: Chrome or Edge"></a>
 </p>
@@ -143,6 +143,14 @@ SelfGuide 延续已有的 `$chatgpt-supervised-server` 和 `$chatgpt-supervised-
 **档位策略：网页版默认 xhigh（Extra High），明显困难的推理问题按需选择网页版 Pro。** 这个判断由 Codex 处理，不修改 Codex 自身的模型或推理档位，也不代表升级订阅。服务器版通过可见网页控件操作；本地扩展尚无自动切档命令，需要本地用户或可用的本地操作工具配合。
 
 [阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/selfguide/blob/main/skills/chatgpt-supervised-server/references/leadership.md)
+
+## 反馈直接交接原文
+
+**网页版给出可一键复制的完整文本块，Codex 保存原文后执行。** 服务器版通过复制按钮获取，本地版直接读取网页文本；截图用于定位控件和确认状态。长代码、报告可另附文件，普通反馈无需每轮下载附件。
+
+每轮自动附上任务号、轮次和首尾标记，接收时检查，原文与来源记录保存在 `feedback/` 和 `state.json`。遇到格式不符，先重取并核对；确需例外时留下核对说明，避免靠截图猜测或补全指令。本地扩展暂不支持下载文件自动回传服务器。
+
+[查看文本交接与恢复规则 →](skills/chatgpt-supervised-server/references/text-handoff.md)
 
 ## 每一步，都留下可追溯的证据
 
