@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+node_modules/
+.venv/
+dist/
+*.zip
+profile*/
+run/
+runs/
+astra/
+.env*
+*.pem
+*.key
+core
+core.*
+*.dmp
