@@ -71,3 +71,7 @@ ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:6080:127.0.0.1:6080 your-server
 首次安装让 Codex 先用合成小文件测试：附件独有随机码 → 网页指导 → 本地结果与独立检查 → 结果上传与网页验收。只有看到真实文件读取证据才继续重要任务。
 
 任务中断后先读 `state.json` 和最近记录，再核对原会话。`send_pending` 代表发送尚未确认，不能直接重复提交。恢复时保持当前浏览器和登录目录；不复制 Cookie、不删除登录资料，也不自动处理验证码。
+
+## 重复安装／升级
+
+在新版仓库或解压包中运行 `python3 tools/install.py server --update`。旧单机调用名 `$selfguide` 加 `--name selfguide`。安装器先备份后更新，保留额外本地文件；完整步骤见 [更新说明](update.md)。复用正在运行的已登录浏览器。

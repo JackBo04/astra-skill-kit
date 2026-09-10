@@ -14,7 +14,7 @@ Codex 继续连接你的服务器，读写文件、运行代码和保存成果�
 python tools/install.py local
 ```
 
-默认安装到 `~/.agents/skills/selfguide-local`。指定其他目录可加 `--skills-dir <目录>`；不会覆盖已存在的 skill。安装后开启新的 Codex 会话以便发现它。
+默认安装到 `~/.agents/skills/selfguide-local`。指定其他目录可加 `--skills-dir <目录>`；相同内容重复安装直接复用；更新已有版本加 `--update`，先备份再更新。安装后开启新的 Codex 会话以便发现它。
 
 在网页版创建或打开名为 **selfguide** 的项目，复制该项目的完整 URL（形如 `https://chatgpt.com/g/g-p-.../project`），在服务器配置一次：
 
@@ -32,6 +32,8 @@ python ~/.agents/skills/selfguide-local/scripts/bridge.py pairing
 ```
 
 把输出中的 `token` 填入自己电脑的扩展。它是本工具的连接配对码，不是 ChatGPT 密码；不要发到聊天、提交仓库或公开分享。配置保存在服务器 `~/.local/share/selfguide-local-bridge/`，登录 Cookie 始终留在本地浏览器。
+
+重复安装／升级见 [更新说明](update.md)。本地扩展在原固定目录更新后重新加载，无需每次卸载或退出 ChatGPT。
 
 ## 2. 自己电脑建立 SSH 转发
 

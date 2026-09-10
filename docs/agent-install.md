@@ -22,7 +22,7 @@ python3 tools/install.py server
 python3 tools/install.py local
 ```
 
-默认安装到 `~/.agents/skills/selfguide-<版本>`；若实际 Codex 环境需要其他发现目录，用 `--skills-dir <目录>` 指定。安装器会拒绝覆盖同名目录。已有安装时先确认来源和内容：相同版本直接复用；确需升级时备份旧 skill、保护用户定制，再执行安装。不要为了升级删除浏览器配置、会话记录或原 `selfguide`。
+默认安装到 `~/.agents/skills/selfguide-<版本>`；其他发现目录用 `--skills-dir <目录>`。重复安装相同内容会直接复用，有变化时用 `--update`，自动备份后更新。原调用名为 `$selfguide` 时加 `--name selfguide`。先识别实际安装和用户定制，按 [更新说明](update.md) 保留必要修改；不删除登录、配对或任务记录。
 
 仓库中的运行依赖和扩展不是仅靠一个 SKILL.md 就能替代的。服务器版必须通过本仓库安装器带上 `runtime/server-browser`；本地版必须保留本地电脑需要加载的 `extension/` 下载入口。不要只复制 SKILL.md 后宣告可用。
 

@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-9ff6dd?style=flat-square&amp;labelColor=182338" alt="License: MIT"></a>
-  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.3.0%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.3.0 Preview"></a>
+  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.4.0%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.4.0 Preview"></a>
   <a href="docs/server-browser.md"><img src="https://img.shields.io/badge/Python-3.10%2B-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Python 3.10 or newer"></a>
   <a href="docs/local-browser.md"><img src="https://img.shields.io/badge/Browser-Chrome%20%2F%20Edge-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Local browser: Chrome or Edge"></a>
 </p>
@@ -111,9 +111,24 @@ python3 tools/install.py local
 
 也可从 [Releases](https://github.com/JackBo04/selfguide/releases) 下载对应 ZIP，解压后执行包内 `tools/install.py`。
 
-新版统一使用 `$selfguide-server` 和 `$selfguide-local` 调用名，聊天项目名为 `selfguide`。从旧版升级时复用现有项目 ID、登录资料和任务记录，迁移步骤见 [命名迁移](docs/migration.md)。安装器默认写入 `~/.agents/skills/`，不覆盖同名安装。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
+新版统一使用 `$selfguide-server` 和 `$selfguide-local` 调用名，聊天项目名为 `selfguide`。从旧版升级时复用现有项目 ID、登录资料和任务记录，迁移步骤见 [命名迁移](docs/migration.md)。安装器默认写入 `~/.agents/skills/`；相同内容重复安装直接复用，升级用 `--update` 自动备份后更新。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
 
 </details>
+
+### 重复安装／升级
+
+在 **Codex 连接的服务器终端**，进入已经克隆的仓库：
+
+```bash
+git pull --ff-only
+python3 tools/install.py local --update
+```
+
+服务器浏览器版将 `local` 换成 `server`。ZIP 用户进入新包目录，直接运行第二条命令。相同内容会提示已是最新；有变化时先备份，再更新发行文件，保留额外本地文件。浏览器登录、配对和任务记录存放在独立目录，安装器不会清空它们。
+
+本地浏览器扩展还需在自己电脑更新：将新版 `extension/` 的内容覆盖到原固定目录，在扩展管理页点“重新加载”，处理完未确认操作后刷新绑定标签页，再连接。通常无需卸载或重新登录；更换扩展目录或扩展 ID 时可能需要重新填入原配对信息。
+
+[完整升级与恢复说明 →](docs/update.md)
 
 ### ③ 给出任务和完成标准
 
@@ -144,11 +159,23 @@ python3 tools/install.py local
 
 [阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/selfguide/blob/main/skills/selfguide-server/references/leadership.md)
 
-## 写作也由网页端完成
+## 三个模块，一套协作方式
 
-论文、报告、README、图表说明，以及翻译、润色和实质改写，都由网页版直接给出可交付正文。网页版自主组织结构、思路与表达；Codex 按需补充背景和材料，协助保存与排版，需要内容修改时再交回网页版。
+| 模块 | 当前状态 | 分工 |
+| :--- | :--- | :--- |
+| **写作** | 已启用 | 网页版起草和修改，自主组织结构与表达；Codex 按需补充材料，保存和排版 |
+| **绘图** | 预留，暂空 | 后续补充 |
+| **实验迭代** | 预留，暂空 | 后续补充 |
 
-[查看写作分工 →](skills/selfguide-server/references/writing.md)
+模块决定做什么，server／local 决定浏览器在哪里。当前只配置了写作模块；另外两个保留空位。
+
+```text
+使用 $selfguide-local 的写作模块，帮我完成：<要写的内容>。
+```
+
+服务器浏览器版换成 `$selfguide-server`；当前原单机部署使用 `$selfguide`。网页端可以边写边向 Codex 索取需要的信息，不必等材料全部齐备才开始。
+
+[查看模块索引 →](skills/selfguide-server/modules/index.md) · [写作模块 →](skills/selfguide-server/modules/writing.md)
 
 ## 反馈直接交接原文
 

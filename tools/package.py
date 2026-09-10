@@ -8,7 +8,7 @@ root=Path(__file__).resolve().parents[1]
 out=root/'dist';out.mkdir(exist_ok=True)
 manifest={}
 for variant in ['server','local']:
- name='selfguide-'+variant+'-browser-v0.3.0'
+ name='selfguide-'+variant+'-browser-v0.4.0'
  sources=[root/'README.md',root/'LICENSE',root/'docs',root/'tools/install.py',root/'skills'/('selfguide-'+variant)]
  sources.append(root/'runtime/server-browser' if variant=='server' else root/'extension')
  paths=set()

@@ -16,7 +16,7 @@ v0.3.0 将当前名称统一为 SelfGuide。升级沿用原 ChatGPT 项目 ID、
 ## 交给 Agent 的升级指令
 
 ```text
-请将现有安装升级到 https://github.com/JackBo04/selfguide 的 v0.3.0。
+请将现有安装升级到 https://github.com/JackBo04/selfguide 的最新发行版。
 先读取 docs/migration.md，确认当前使用 server 还是 local。
 复用现有项目、登录、配对和任务记录，将显示名称、调用名与配置迁移到 selfguide。
 普通检查和可逆迁移直接执行；完成后报告新调用方式和迁移验证结果。
@@ -34,3 +34,5 @@ v0.3.0 将当前名称统一为 SelfGuide。升级沿用原 ChatGPT 项目 ID、
 8. 核对浏览器仍已登录、旧任务能恢复、新建记录使用新名称。网页改名后 `session.py sent` 允许同一项目 ID、同一会话 ID 的 slug 变化，仍拒绝切换任务会话。
 
 `SELFGUIDE_CHROME`、`SELFGUIDE_XVFB` 和 `SELFGUIDE_ALLOW_NO_SANDBOX` 替代旧的 `ASTRA_*` 对应变量，运行时仍可读取旧变量。新命名不是重新登录或重新配对的理由。
+
+命名迁移完成后，后续重复安装用 `--update`；详见 [更新说明](update.md)。
