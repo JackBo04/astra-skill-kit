@@ -1,27 +1,17 @@
 ---
 name: selfguide-server
-description: SelfGuide：在服务器专用浏览器中用用户自己的 ChatGPT 指导 Codex 执行、上传材料、反馈和验收；适用于服务器浏览器及 selfguide 项目协作，本地电脑浏览器请使用另一版本。
+description: 使用服务器浏览器中的 ChatGPT 指导 Codex 执行、反馈与验收；用于 SelfGuide 网页协作任务。
 ---
-# SelfGuide 文本通道实验版
+# SelfGuide · 文本通道实验版
 
-网页版主导任务、写作与评审，Codex 实际执行并反馈。先读取 [文本通道与自动等待](references/dom-bridge.md)，使用扩展收发与 `wait_reply.py` 自动等候。默认不截图；只有文本诊断无法解决的异常才看一次画面。不得把“每次操作前截图”作为本分支的流程。
+网页主导方案、写作和验收，Codex 在用户选定的服务器执行。首轮发送用户任务、已有背景与完成标准，请网页提出所需信息和下一步；之后反馈新增结果与疑问，沿用原会话直到完成。材料按需补充，常规修复自主处理，真正需要用户决定时再问。
 
-## 模块与分工
+常规只读 [收发流程](references/dom-bridge.md)，已读内容无需每轮重读。优先 DOM 文本与程序等待；只有文本无法诊断的特殊异常才截图。任务记录保存在文件，恢复时先读简短状态及最新交接，不搬入全部历史；需要追溯再读对应记录。
 
-按 [模块索引](modules/index.md) 选择模块。写作已启用，由网页版自主起草和修改，Codex 按需补充材料并保存排版；绘图和实验迭代仍为空位，不添加专用规则。读取 [网页主导与档位](references/leadership.md) 和 [完整文本交接](references/text-handoff.md)。网页默认 xhigh，难点使用账户可用的 Pro；实际档位从真实控件核对，不通过提示词假装切档。
+按需读取：
+- 涉及正文起草、修改或翻译：[写作模块](modules/writing.md)。绘图、实验迭代模块暂空。
+- 初始化或配对：[连接设置](references/setup.md)。独立安装测试，不替换主版本。
+- 网页默认 xhigh／Extra High，难点用可用的 Pro；需核对或切档时读 [档位](references/leadership.md)。这指网页档位，提示词不能切档。
+- 收发中断：[恢复](references/recovery.md)；正文格式或下载问题：[文本交接](references/text-handoff.md)。
 
-## 任务流程
-
-1. 整理用户任务，在独立工作区用 `session.py new` 建档。从配置的 selfguide 项目新建一条会话。
-2. 通过 `bridge.py status` 获取小型状态；选定材料用 `session.py stage` 和 `bridge.py attach` 上传，程序确认对应卡片与上传完成。
-3. `session.py prepare` 生成本轮消息；`bridge.py compose` 填入并核对。记录 `submitting` 后调用 `bridge.py send`，确认发送才登记 `sent`。
-4. 启动 `wait_reply.py`，由程序等待本轮完整回复。正常生成和超时不截图；原进程未结束时不重复启动，超时后用原参数加 `--resume`。
-5. 完成后从文件读取原文，用 `session.py reply --source dom` 检查任务与轮次，再执行建议。实际结果回传原会话，持续到完成原任务并得到网页验收。
-
-## 恢复与边界
-
-沿用原会话、任务状态和收发文件；`send_pending` 不等于发送失败。遇到不明操作先查询原 job，不盲目重发。原授权覆盖任务需要的常规收发与可逆实现；新范围或必须用户决定的事再询问。
-
-复用现有登录，保持 Cookie、密码、配对码和账户资料在原设备。登录／人机验证由用户处理。网站验证、额度、网络或 DOM 异常从结构化状态诊断，需要画面时再截图；不通过伪装或绕过限制解决。
-
-此分支以独立目录安装测试，不替换已运行的主版本。它不会自行唤醒 Codex；工作时需要执行环境和桥接保持运行。
+复用登录，凭据保留在原设备；登录和人机验证由用户处理。
