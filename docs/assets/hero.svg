@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="380" viewBox="0 0 1280 380" role="img" aria-labelledby="title desc">
+  <title id="title">Astra — Plan in ChatGPT. Build with Codex.</title>
+  <desc id="desc">An open-source bridge between web guidance and server execution. A star connects ChatGPT guidance to Codex execution and evidence.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111c32"/><stop offset="1" stop-color="#080e1a"/></linearGradient>
+    <linearGradient id="star" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9ff6dd"/><stop offset="1" stop-color="#91a7ff"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#314b73" stop-opacity=".5"/><stop offset="1" stop-color="#0b1220" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#314259" opacity=".4"/></pattern>
+  </defs>
+  <rect width="1280" height="380" rx="20" fill="url(#bg)"/>
+  <rect width="1280" height="380" rx="20" fill="url(#grid)"/>
+  <ellipse cx="1000" cy="160" rx="380" ry="300" fill="url(#glow)"/>
+  <path d="M84 57 L94 80 L117 90 L94 100 L84 123 L74 100 L51 90 L74 80 Z" fill="url(#star)"/>
+  <text x="134" y="106" fill="#f2f6ff" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" letter-spacing="-2">astra</text>
+  <text x="57" y="173" fill="#9ff6dd" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="3">WEB GUIDANCE. SERVER EXECUTION.</text>
+  <text x="55" y="228" fill="#f2f6ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" letter-spacing="-1">Plan in ChatGPT.</text>
+  <text x="55" y="276" fill="#f2f6ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" letter-spacing="-1">Build with Codex.</text>
+  <text x="57" y="329" fill="#92a5c1" font-family="Arial, Helvetica, sans-serif" font-size="15">Your account. Your server. A traceable feedback loop.</text>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <path d="M885 118 H1101 Q1120 118 1120 138 V249 Q1120 268 1101 268 H775 Q756 268 756 249 V160" fill="none" stroke="#516582" stroke-width="1.5" stroke-dasharray="5 6"/>
+    <path d="M750 168 L756 156 L762 168" fill="none" stroke="#9ff6dd" stroke-width="2"/>
+    <rect x="704" y="78" width="213" height="105" rx="13" fill="#14263b" stroke="#37605e"/>
+    <circle cx="729" cy="102" r="4" fill="#9ff6dd"/>
+    <text x="743" y="106" fill="#9ff6dd" font-size="10" letter-spacing="2" font-weight="700">GUIDE</text>
+    <text x="727" y="137" fill="#f2f6ff" font-size="24" font-weight="700">ChatGPT</text>
+    <text x="727" y="161" fill="#a4b6cc" font-size="12">Plan · Ask · Review</text>
+    <path d="M923 130 H951" stroke="#9ff6dd" stroke-width="2"/>
+    <path d="M945 125 L952 130 L945 135" fill="none" stroke="#9ff6dd" stroke-width="2"/>
+    <rect x="967" y="130" width="242" height="105" rx="13" fill="#1b2440" stroke="#4d5181"/>
+    <circle cx="992" cy="154" r="4" fill="#a6b5ff"/>
+    <text x="1006" y="158" fill="#a6b5ff" font-size="10" letter-spacing="2" font-weight="700">EXECUTE</text>
+    <text x="990" y="189" fill="#f2f6ff" font-size="24" font-weight="700">Codex</text>
+    <text x="990" y="213" fill="#a4b6cc" font-size="12">Inspect · Build · Verify</text>
+    <rect x="809" y="252" width="230" height="32" rx="16" fill="#0f192a" stroke="#34435d"/>
+    <text x="924" y="273" text-anchor="middle" fill="#b8c6dd" font-size="12">Files, results &amp; evidence</text>
+    <text x="956" y="329" text-anchor="middle" fill="#8094b2" font-size="11" letter-spacing="2">ONE TASK. ONE PROJECT THREAD.</text>
+  </g>
+</svg>
