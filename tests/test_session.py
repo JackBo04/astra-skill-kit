@@ -13,18 +13,18 @@ class SessionTest(unittest.TestCase):
   for variant in ['server','local']:
    with self.subTest(variant=variant), tempfile.TemporaryDirectory() as d:
     root=Path(d);(root/'browser/run').mkdir(parents=True);(root/'bridge').mkdir()
-    project='https://chatgpt.com/g/g-p-test/project'
-    (root/'browser/run/astra-project.json').write_text(json.dumps({'name':'astra','url':project}))
+    project='https://chatgpt.com/g/g-p-test-selfguide/project'
+    (root/'browser/run/selfguide-project.json').write_text(json.dumps({'name':'selfguide','url':project}))
     (root/'bridge/config.json').write_text(json.dumps({'project_url':project}))
-    env={**os.environ,'CHATGPT_BROWSER_HOME':str(root/'browser'),'ASTRA_LOCAL_HOME':str(root/'bridge')}
-    script=ROOT/f'skills/chatgpt-supervised-{variant}/scripts/session.py'
+    env={**os.environ,'SELFGUIDE_BROWSER_HOME':str(root/'browser'),'SELFGUIDE_LOCAL_HOME':str(root/'bridge')}
+    script=ROOT/f'skills/selfguide-{variant}/scripts/session.py'
     task=root/'task.txt';task.write_text('Synthetic task')
     source=root/'data.txt';source.write_bytes(b'original evidence')
     def call(*args,ok=True):
      result=subprocess.run([sys.executable,str(script),*map(str,args)],capture_output=True,text=True,env=env)
      self.assertEqual(result.returncode==0,ok,result.stderr)
      return json.loads(result.stdout) if ok else None
-    run=Path(call('new','--task-file',task,'--workspace',root/'astra')['run'])
+    run=Path(call('new','--task-file',task,'--workspace',root/'selfguide')['run'])
     for name in ['uploads','messages','feedback','outputs','checks']:self.assertTrue((run/name).is_dir())
     call('stage','--run',run,'--file',source)
     item=json.loads((run/'uploads/manifest.json').read_text())['files'][0]
@@ -35,7 +35,7 @@ class SessionTest(unittest.TestCase):
     call('sent','--run',run,'--url','https://chatgpt.com/c/wrong',ok=False)
     call('checkpoint','--run',run,'--phase','paused','--note-file',task)
     call('resume','--run',run);self.assertEqual(call('status','--run',run)['phase'],'send_pending')
-    call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-astra/c/123')
+    call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-selfguide/c/123')
     self.assertIn(f'SELFGUIDE_REPLY_END task={run.name} round=1', (run/'messages/out-001.txt').read_text())
     reply=root/'reply.txt'
     body='信息需求：读取 config.json\n下一步：检查 /tmp/a_b；保留反斜杠 \\ 和中文。\n验证：输出应等于 31。'
@@ -57,7 +57,8 @@ class SessionTest(unittest.TestCase):
     self.assertEqual(incoming['incoming_sha256'],hashlib.sha256(reply.read_bytes()).hexdigest())
     self.assertEqual(incoming['incoming_source'],'clipboard')
     call('prepare','--run',run,'--file',task);call('submitting','--run',run)
-    call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-astra/c/123')
+    call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-renamed/c/different',ok=False)
+    call('sent','--run',run,'--url','https://chatgpt.com/g/g-p-test-renamed/c/123')
     reply.write_text('完整 DOM 原文，但网页未遵守格式。')
     note=root/'review.txt';note.write_text('核对本轮用户消息和 DOM 生成结束状态，完整正文已取得。')
     call('reply','--run',run,'--file',reply,'--source','dom','--format-note-file',note)
@@ -69,7 +70,7 @@ class SessionTest(unittest.TestCase):
     state=json.loads((legacy/'state.json').read_text());state.pop('reply_format');state.pop('layout_version')
     (legacy/'state.json').write_text(json.dumps(state))
     call('prepare','--run',legacy,'--file',task);call('submitting','--run',legacy)
-    call('sent','--run',legacy,'--url','https://chatgpt.com/g/g-p-test-astra/c/456')
+    call('sent','--run',legacy,'--url','https://chatgpt.com/g/g-p-test-selfguide/c/456')
     call('reply','--run',legacy,'--file',task)
     self.assertEqual((legacy/'in-001.txt').read_text(),task.read_text())
     call('checkpoint','--run',run,'--phase','complete','--note-file',task)

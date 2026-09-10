@@ -17,7 +17,9 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 import uuid
 
-BASE = Path(os.environ.get('ASTRA_LOCAL_HOME', Path.home() / '.local/share/astra-local-bridge'))
+from config_paths import local_home
+
+BASE = local_home()
 LIMIT = 12 * 1024 * 1024
 ACTIONS = {'snapshot', 'project', 'compose', 'send', 'reply', 'attach'}
 MUTATIONS = ACTIONS - {'snapshot', 'reply'}

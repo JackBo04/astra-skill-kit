@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import tempfile
+import sys
 import threading
 import unittest
 from urllib.error import HTTPError
@@ -11,7 +12,8 @@ from urllib.request import Request, urlopen
 import uuid
 
 ROOT=Path(__file__).resolve().parents[1]
-spec=importlib.util.spec_from_file_location('bridge',ROOT/'skills/chatgpt-supervised-local/scripts/bridge.py')
+sys.path.insert(0,str(ROOT/'skills/selfguide-local/scripts'))
+spec=importlib.util.spec_from_file_location('bridge',ROOT/'skills/selfguide-local/scripts/bridge.py')
 bridge=importlib.util.module_from_spec(spec);spec.loader.exec_module(bridge)
 
 class MailboxTest(unittest.TestCase):

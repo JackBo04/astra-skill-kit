@@ -11,7 +11,9 @@ import time
 from urllib.parse import urlsplit, urlunsplit
 import uuid
 
-BASE = Path(os.environ.get('CHATGPT_BROWSER_HOME', Path.home() / '.local/share/codex-chatgpt-browser'))
+from config_paths import browser_home, project_file
+
+BASE = browser_home()
 
 def environment():
     config = json.loads((BASE / 'run/config.json').read_text())
@@ -44,13 +46,13 @@ def read_clipboard():
 
 def browser_window():
     matches = []
-    profile_arg = '--user-data-dir=' + str(BASE / 'profile-manual')
+    profile_path = (BASE / 'profile-manual').resolve()
     for entry in Path('/proc').iterdir():
         if not entry.name.isdigit():
             continue
         try:
             args = (entry / 'cmdline').read_bytes().decode(errors='replace').split('\0')
-            if profile_arg in args and not any(arg.startswith('--type=') for arg in args):
+            if any(arg.startswith('--user-data-dir=') and Path(arg.split('=', 1)[1]).resolve() == profile_path for arg in args) and not any(arg.startswith('--type=') for arg in args):
                 matches.append(int(entry.name))
         except (OSError, PermissionError):
             pass

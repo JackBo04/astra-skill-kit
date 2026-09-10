@@ -1,8 +1,8 @@
 # 本地浏览器版
 
-Codex 继续连接你的服务器，读写文件、运行代码和保存成果都在服务器。你电脑的 Chrome 或 Edge 打开自己的 ChatGPT，扩展在绑定的 astra 标签页中收发。消息与选定文件经过 SSH 隧道传到扩展，再由网页上传；不迁移登录资料，也不使用 OpenAI API 密钥。
+Codex 继续连接你的服务器，读写文件、运行代码和保存成果都在服务器。你电脑的 Chrome 或 Edge 打开自己的 ChatGPT，扩展在绑定的 selfguide 标签页中收发。消息与选定文件经过 SSH 隧道传到扩展，再由网页上传；不迁移登录资料，也不使用 OpenAI API 密钥。
 
-流程：服务器 Codex → 服务器回环地址上的桥接服务 → SSH 隧道 → 本地扩展 → 当前 astra 网页会话。网页回复沿原路返回。
+流程：服务器 Codex → 服务器回环地址上的桥接服务 → SSH 隧道 → 本地扩展 → 当前 selfguide 网页会话。网页回复沿原路返回。
 
 此版本提供 Chrome／Edge 通用扩展及 SSH 指令，适用于有相应浏览器和 SSH 客户端的 Windows、macOS、Linux。v0.1.0 已做完整模拟页面联调，**尚未在你的电脑和真实 ChatGPT 页面验收**；首次配对后先让 Codex 用合成文件做两轮验收，页面结构不匹配时需要调整扩展选择器。
 
@@ -14,13 +14,13 @@ Codex 继续连接你的服务器，读写文件、运行代码和保存成果�
 python tools/install.py local
 ```
 
-默认安装到 `~/.agents/skills/chatgpt-supervised-local`。指定其他目录可加 `--skills-dir <目录>`；不会覆盖已存在的 skill。安装后开启新的 Codex 会话以便发现它。
+默认安装到 `~/.agents/skills/selfguide-local`。指定其他目录可加 `--skills-dir <目录>`；不会覆盖已存在的 skill。安装后开启新的 Codex 会话以便发现它。
 
-在网页版创建或打开名为 **astra** 的项目，复制该项目的完整 URL（形如 `https://chatgpt.com/g/g-p-.../project`），在服务器配置一次：
+在网页版创建或打开名为 **selfguide** 的项目，复制该项目的完整 URL（形如 `https://chatgpt.com/g/g-p-.../project`），在服务器配置一次：
 
 ```bash
-python ~/.agents/skills/chatgpt-supervised-local/scripts/bridge.py init --project-url '你的astra项目URL'
-python ~/.agents/skills/chatgpt-supervised-local/scripts/bridge.py serve
+python ~/.agents/skills/selfguide-local/scripts/bridge.py init --project-url '你的selfguide项目URL'
+python ~/.agents/skills/selfguide-local/scripts/bridge.py serve
 ```
 
 第二条在前台运行，保留这个终端。也可用服务器已有的终端会话管理工具保持它运行。桥接仅监听服务器的 `127.0.0.1:8765`，不需要公网开放端口。启动失败若显示端口占用，先确认是否已有服务，勿重复启动。
@@ -28,10 +28,10 @@ python ~/.agents/skills/chatgpt-supervised-local/scripts/bridge.py serve
 另开一个服务器终端查看配对信息：
 
 ```bash
-python ~/.agents/skills/chatgpt-supervised-local/scripts/bridge.py pairing
+python ~/.agents/skills/selfguide-local/scripts/bridge.py pairing
 ```
 
-把输出中的 `token` 填入自己电脑的扩展。它是本工具的连接配对码，不是 ChatGPT 密码；不要发到聊天、提交仓库或公开分享。配置保存在服务器 `~/.local/share/astra-local-bridge/`，登录 Cookie 始终留在本地浏览器。
+把输出中的 `token` 填入自己电脑的扩展。它是本工具的连接配对码，不是 ChatGPT 密码；不要发到聊天、提交仓库或公开分享。配置保存在服务器 `~/.local/share/selfguide-local-bridge/`，登录 Cookie 始终留在本地浏览器。
 
 ## 2. 自己电脑建立 SSH 转发
 
@@ -47,31 +47,31 @@ ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L 127.0.0.1:8765:1
 
 1. 将本地版 ZIP 下载并解压到自己电脑的固定目录，不要装进临时下载缓存。
 2. Chrome 打开 `chrome://extensions`，Edge 打开 `edge://extensions`。启用“开发者模式”，选择“加载已解压的扩展程序”，选包内 **extension** 文件夹。
-3. 在这个浏览器登录自己的 ChatGPT，打开刚才配置的 astra 项目。安装扩展前已打开的页面请刷新一次。
+3. 在这个浏览器登录自己的 ChatGPT，打开刚才配置的 selfguide 项目。安装扩展前已打开的页面请刷新一次。
 4. 点击扩展图标，保留本地地址 `http://127.0.0.1:8765`，填入服务器生成的配对码，点“连接当前标签页”。显示“已连接，等待 Codex 任务”即可。
 
-只绑定这一张 astra 标签页。工作时保持该标签页存在，避免同时手动编辑它的输入框。你可以正常使用其他标签页；后台节流可能使收发变慢。关闭标签页、浏览器或电脑休眠后，需要恢复连接；登录通常由原浏览器保留，是否继续有效由网站决定。
+只绑定这一张 selfguide 标签页。工作时保持该标签页存在，避免同时手动编辑它的输入框。你可以正常使用其他标签页；后台节流可能使收发变慢。关闭标签页、浏览器或电脑休眠后，需要恢复连接；登录通常由原浏览器保留，是否继续有效由网站决定。
 
 ## 4. 让 Codex 干活
 
 回到连接服务器的 Codex，说：
 
 ```text
-使用 $chatgpt-supervised-local。
+使用 $selfguide-local。
 先用一个只包含合成数据的小附件验证本地上传、读取和反馈。
-通过后，让 astra 指导你完成：<我的实际任务>。
+通过后，让 selfguide 指导你完成：<我的实际任务>。
 材料：<服务器路径>；验收要求：<标准>。
 按反馈继续完成，只有需要我决定时才问我。
 ```
 
-以后沿用这个 skill 发任务即可。每个新任务在 astra 新建一条会话，同一任务的后续反馈继续原会话。服务器文件由 Codex 选择并传送，电脑上无需手工复制中转文件。本版本一次附件最多 8 MiB，这是桥接本身的限制；大文件先提取所需片段、统计或图表。
+以后沿用这个 skill 发任务即可。每个新任务在 selfguide 新建一条会话，同一任务的后续反馈继续原会话。服务器文件由 Codex 选择并传送，电脑上无需手工复制中转文件。本版本一次附件最多 8 MiB，这是桥接本身的限制；大文件先提取所需片段、统计或图表。
 
 ## 暂停和排错
 
 扩展的“暂停”停止领取后续命令，已开始的单次动作可能仍完成；登录不受影响。配对后改端口或服务器前，先确认当前动作已完成。不要把同一配对码同时交给两个浏览器实例。
 
 - “连接暂停”：检查服务器服务和本地 SSH 窗口，确认地址和配对码一致。
-- “先打开服务器配置的 astra 项目”：所选标签页的项目 ID 与配置不同，打开正确项目再绑定。
+- “先打开服务器配置的 selfguide 项目”：所选标签页的项目 ID 与配置不同，打开正确项目再绑定。
 - “没有找到聊天输入框”：先看页面是否需要手动登录或验证；如果页面正常，则检查 `extension/content.js` 的页面选择器。不要反复提交登录。
 - 发出命令后超时：让 Codex 查询原 job 并查看页面，不能重复发送同一消息。程序保存命令记录，并拒绝在上次写操作未确认时继续新的写操作。
 - 附件未出现：上传尝试不算上传成功，先看网页卡片和错误；必要时调整页面适配。首次真实验收必须让网页版读出仅存在于附件中的内容。

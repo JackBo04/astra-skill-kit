@@ -97,11 +97,11 @@
   }
   let active = false;
   chrome.runtime.onMessage.addListener((message, _sender, respond) => {
-    if (message.type !== 'astra-command') return;
+    if (message.type !== 'selfguide-command') return;
     if (active) { respond({error:'已有网页操作执行中。'}); return; }
     active = true;
     run(message.command).then(respond,error=>respond({error:error.message})).finally(()=>{active=false;});
     return true;
   });
-  setInterval(() => { chrome.runtime.sendMessage({type:'astra-heartbeat'}).catch(()=>{}); },2000);
+  setInterval(() => { chrome.runtime.sendMessage({type:'selfguide-heartbeat'}).catch(()=>{}); },2000);
 })();

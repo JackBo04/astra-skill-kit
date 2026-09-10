@@ -8,10 +8,10 @@ const status = document.querySelector('#status');
 })();
 document.querySelector('#bind').onclick=async()=>{
   status.textContent='正在连接…';
-  const result=await chrome.runtime.sendMessage({type:'astra-bind',endpoint:document.querySelector('#endpoint').value.trim(),token:document.querySelector('#token').value.trim()});
+  const result=await chrome.runtime.sendMessage({type:'selfguide-bind',endpoint:document.querySelector('#endpoint').value.trim(),token:document.querySelector('#token').value.trim()});
   status.textContent=result.error || (await chrome.storage.local.get('status')).status;
 };
 document.querySelector('#pause').onclick=async()=>{
-  const result=await chrome.runtime.sendMessage({type:'astra-pause'});
+  const result=await chrome.runtime.sendMessage({type:'selfguide-pause'});
   status.textContent=result.error || '已暂停；登录状态保持不变';
 };

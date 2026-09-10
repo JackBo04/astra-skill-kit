@@ -8,19 +8,19 @@
 
 ```bash
 python tools/install.py server
-python ~/.agents/skills/chatgpt-supervised-server/scripts/browserctl.py status
+python ~/.agents/skills/selfguide-server/scripts/browserctl.py status
 ```
 
-如果已有服务正常运行，直接复用。不重启浏览器，不重新建登录目录。现有部署使用 `~/.local/share/codex-chatgpt-browser`，安装后的 skill 也默认查找这个目录。
+如果已有服务正常运行，直接复用。不重启浏览器，不重新建登录目录。现有部署使用 `~/.local/share/selfguide-browser`，安装后的 skill 也默认查找这个目录。
 
 开启新的 Codex 会话后说：
 
 ```text
-使用 $chatgpt-supervised-server，让 astra 网页版指导你完成 <任务>。
+使用 $selfguide-server，让 selfguide 网页版指导你完成 <任务>。
 材料在 <服务器路径>，验收标准是 <标准>。按反馈持续执行。
 ```
 
-原来的 `chatgpt-supervised-work` 不会被安装工具改动。如果两个版本都安装了，在任务里明确指定上述名称。
+原来的 `selfguide` 不会被安装工具改动。如果两个版本都安装了，在任务里明确指定上述名称。
 
 ## 新服务器安装
 
@@ -35,20 +35,20 @@ Node.js 与 Google Chrome 使用各自官方安装方式。没有管理员权限
 安装 skill 后，在其桌面服务目录安装 Node 依赖：
 
 ```bash
-cd ~/.agents/skills/chatgpt-supervised-server/runtime/server-browser
+cd ~/.agents/skills/selfguide-server/runtime/server-browser
 npm ci
 ```
 
-在自己账户创建或打开 **astra** 项目，复制项目完整 URL。返回任意目录执行：
+在自己账户创建或打开 **selfguide** 项目，复制项目完整 URL。返回任意目录执行：
 
 ```bash
-python ~/.agents/skills/chatgpt-supervised-server/scripts/browserctl.py setup --project-url '你的astra项目URL'
-python ~/.agents/skills/chatgpt-supervised-server/scripts/browserctl.py start
-python ~/.agents/skills/chatgpt-supervised-server/scripts/browserctl.py status
-python ~/.agents/skills/chatgpt-supervised-server/scripts/browserctl.py url
+python ~/.agents/skills/selfguide-server/scripts/browserctl.py setup --project-url '你的selfguide项目URL'
+python ~/.agents/skills/selfguide-server/scripts/browserctl.py start
+python ~/.agents/skills/selfguide-server/scripts/browserctl.py status
+python ~/.agents/skills/selfguide-server/scripts/browserctl.py url
 ```
 
-`start` 检查已有服务，已有就复用。新服务默认使用显示号 97、远程查看端口 6080 和仅供内部使用的 VNC 端口 5907；发生冲突时先诊断已有进程，不删除锁文件强制启动。Chrome 和 Xvfb 路径可分别通过 `ASTRA_CHROME`、`ASTRA_XVFB` 指定；运行根目录可用 `CHATGPT_BROWSER_HOME` 指定，同一部署的脚本需使用一致环境变量。
+`start` 检查已有服务，已有就复用。新服务默认使用显示号 97、远程查看端口 6080 和仅供内部使用的 VNC 端口 5907；发生冲突时先诊断已有进程，不删除锁文件强制启动。Chrome 和 Xvfb 路径可分别通过 `SELFGUIDE_CHROME`、`SELFGUIDE_XVFB` 指定；运行根目录可用 `SELFGUIDE_BROWSER_HOME` 指定，同一部署的脚本需使用一致环境变量。
 
 Chrome 默认启用沙箱。某些受限服务器不支持沙箱，只有确认这一限制并接受影响后，才用 `start --allow-no-sandbox`。不要以解决登录问题为由自动关闭沙箱或改变浏览器指纹。
 
@@ -64,7 +64,7 @@ ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:6080:127.0.0.1:6080 your-server
 
 首次在画面中由你输入邮箱、密码或验证码；遇到人机验证也由你操作。该专用 Chrome 使用固定 `profile-manual/`，后续任务复用登录。关闭远程查看页面不会主动关闭服务器 Chrome；网站要求重新登录时仍需人工处理，不能保证登录永不失效。
 
-新任务在 astra 中新建会话，材料和结果保存在当前工作区 `astra/tasks/`。附件通过服务器系统文件剪贴板上传。原部署的原生文件选择弹窗不可用，已用文件粘贴真实验证 TXT 和 JSON，因此无需为上传重启浏览器。
+新任务在 selfguide 中新建会话，材料和结果保存在当前工作区 `selfguide/tasks/`。附件通过服务器系统文件剪贴板上传。原部署的原生文件选择弹窗不可用，已用文件粘贴真实验证 TXT 和 JSON，因此无需为上传重启浏览器。
 
 ## 验证与恢复
 

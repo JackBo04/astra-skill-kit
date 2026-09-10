@@ -12,7 +12,9 @@ import shutil
 from urllib.parse import urlsplit
 import uuid
 
-BASE = Path(os.environ.get('CHATGPT_BROWSER_HOME', Path.home() / '.local/share/codex-chatgpt-browser'))
+from config_paths import browser_home, project_file
+
+BASE = browser_home()
 
 def now():
     return datetime.now(timezone.utc).isoformat()
@@ -39,6 +41,7 @@ def reply_instruction(state, number):
             "请把本轮完整反馈放在一个可一键复制的 text 代码块里，块外不放执行所需内容。\n"
             "在下列首尾标记之间写清：信息需求、下一步动作、验证要求或验收结论。\n"
             "不要省略代码、路径、条件；代码块内部不再使用三反引号。\n"
+            "涉及正文写作、翻译或润色，请你自主组织并直接交付正文；Codex 按需补充背景和材料、协助保存排版，需要信息请向它索取。\n"
             "长文件可另附真实下载文件，但在此块中注明用途；无法生成附件就提供完整文本。\n"
             + begin + "\n<完整反馈正文>\n" + end + "\n")
 
@@ -61,7 +64,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
     new = sub.add_parser('new'); new.add_argument('--task-file', type=Path, required=True)
-    new.add_argument('--workspace', type=Path, default=Path.cwd() / 'astra')
+    new.add_argument('--workspace', type=Path, default=Path.cwd() / 'selfguide')
     for action in ['stage', 'prepare', 'submitting', 'sent', 'reply', 'checkpoint', 'resume', 'status']:
         item = sub.add_parser(action); item.add_argument('--run', type=Path, required=True)
         if action in ['stage', 'prepare', 'reply']:
@@ -76,18 +79,19 @@ def main():
             item.add_argument('--note-file', type=Path, required=True)
     args = parser.parse_args()
     if args.action == 'new':
-        bridge_base = Path(os.environ.get('ASTRA_LOCAL_HOME', Path.home() / '.local/share/astra-local-bridge'))
+        from config_paths import local_home
+        bridge_base = local_home()
         bridge_config = json.loads((bridge_base / 'config.json').read_text())
-        project = {'name': 'astra', 'url': bridge_config['project_url']}
-        if project['name'] != 'astra':
-            raise ValueError('All new conversations must belong to astra.')
+        project = {'name': 'selfguide', 'url': bridge_config['project_url']}
+        if project['name'] not in ['selfguide', 'astra']:
+            raise ValueError('All new conversations must belong to selfguide.')
         task = text_file(args.task_file)
         run = args.workspace.resolve() / 'tasks' / (datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '-' + uuid.uuid4().hex[:8])
         run.mkdir(parents=True, mode=0o700)
         for directory in ['uploads', 'messages', 'feedback', 'outputs', 'checks']:
             (run / directory).mkdir(mode=0o700)
         (run / 'task.txt').write_text(task)
-        state = {'id': run.name, 'project_name': 'astra', 'project_url': project['url'],
+        state = {'id': run.name, 'project_name': 'selfguide', 'project_url': project['url'],
                  'conversation_url': None, 'phase': 'ready', 'round': 0, 'rounds': [],
                  'created_at': now(), 'events': [], 'layout_version': 2, 'reply_format': 'selfguide-text-v1'}
         save(run / 'state.json', state)
@@ -150,11 +154,14 @@ def main():
             if state['phase'] != 'send_pending':
                 raise ValueError('Confirm the pending browser submission first.')
             parsed = urlsplit(args.url)
-            project_key = urlsplit(state['project_url']).path.split('/')[2]
+            project_match = re.fullmatch(r'/g/(g-p-[A-Za-z0-9]+)(?:-[^/]+)?/project', urlsplit(state['project_url']).path)
+            if not project_match:
+                raise ValueError('The configured project URL is invalid.')
+            project_key = project_match.group(1)
             if (parsed.scheme != 'https' or parsed.netloc != 'chatgpt.com' or parsed.query or parsed.fragment
                     or not re.fullmatch('/g/' + re.escape(project_key) + r'(?:-[^/]+)?/c/[A-Za-z0-9-]+', parsed.path)):
-                raise ValueError('The conversation URL must be inside the configured astra project.')
-            if state['conversation_url'] and state['conversation_url'] != args.url:
+                raise ValueError('The conversation URL must be inside the configured selfguide project.')
+            if state['conversation_url'] and urlsplit(state['conversation_url']).path.rsplit('/', 1)[-1] != parsed.path.rsplit('/', 1)[-1]:
                 raise ValueError('Continue in the original task conversation.')
             state['conversation_url'] = args.url
             state['rounds'][-1]['sent_at'] = now()

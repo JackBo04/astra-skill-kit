@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-9ff6dd?style=flat-square&amp;labelColor=182338" alt="License: MIT"></a>
-  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.2.1%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.2.1 Preview"></a>
+  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.3.0%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.3.0 Preview"></a>
   <a href="docs/server-browser.md"><img src="https://img.shields.io/badge/Python-3.10%2B-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Python 3.10 or newer"></a>
   <a href="docs/local-browser.md"><img src="https://img.shields.io/badge/Browser-Chrome%20%2F%20Edge-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Local browser: Chrome or Edge"></a>
 </p>
@@ -41,7 +41,7 @@
   <img src="docs/assets/workflow.svg" alt="用户定义任务，ChatGPT 指导，服务器 Codex 执行，验证结果返回网页继续评审。" width="100%">
 </p>
 
-每个新任务都在配置的 ChatGPT 项目中新建专用会话（现有部署名为 **astra**）。方案、补充信息、执行问题和结果评审沿用这条会话，服务器同步保存任务档案。
+每个新任务都在配置的 ChatGPT 项目中新建专用会话（现有部署名为 **selfguide**）。方案、补充信息、执行问题和结果评审沿用这条会话，服务器同步保存任务档案。
 
 **已有真实验证：** 合成 TXT 上传 → 网页读出附件独有随机码 → 指导生成 JSON → Codex 独立核对 → JSON 结果回传 → 网页验收通过。[查看验证范围 →](docs/validation.md)
 
@@ -63,7 +63,7 @@
 | **ChatGPT 浏览器** | 服务器专用 Chrome，通过远程画面查看 | 自己电脑上的 Chrome／Edge |
 | **连接方式** | 虚拟桌面与远程查看入口 | 浏览器扩展与 SSH 隧道 |
 | **适合** | 复用当前服务器浏览器，让它持续运行 | 使用自己电脑的浏览器登录 |
-| **调用名称** | `$chatgpt-supervised-server` | `$chatgpt-supervised-local` |
+| **调用名称** | `$selfguide-server` | `$selfguide-local` |
 | **详细说明** | [服务器版安装指南](docs/server-browser.md) | [本地版安装指南](docs/local-browser.md) |
 
 ### ② 复制安装指令
@@ -75,7 +75,7 @@
 https://github.com/JackBo04/selfguide
 
 选择 server 版本，先读取 README.md 和 docs/agent-install.md，按规范执行。
-复用已有 astra 项目、浏览器和登录状态，完成安装、配置及合成附件的真实验收。
+复用已有 selfguide 项目、浏览器和登录状态，完成安装、配置及合成附件的真实验收。
 普通步骤和可逆修复直接处理；只有缺少必要信息、需要我登录或决定时再问我。
 最后给我安装位置、实际验证结果和后续任务调用示例。
 ```
@@ -111,38 +111,44 @@ python3 tools/install.py local
 
 也可从 [Releases](https://github.com/JackBo04/selfguide/releases) 下载对应 ZIP，解压后执行包内 `tools/install.py`。
 
-SelfGuide 延续已有的 `$chatgpt-supervised-server` 和 `$chatgpt-supervised-local` 调用名；聊天项目 `astra`、任务目录与登录配置也沿用现有部署。安装器默认写入 `~/.agents/skills/`，不覆盖同名安装。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
+新版统一使用 `$selfguide-server` 和 `$selfguide-local` 调用名，聊天项目名为 `selfguide`。从旧版升级时复用现有项目 ID、登录资料和任务记录，迁移步骤见 [命名迁移](docs/migration.md)。安装器默认写入 `~/.agents/skills/`，不覆盖同名安装。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
 
 </details>
 
 ### ③ 给出任务和完成标准
 
 ```text
-使用 $chatgpt-supervised-server。
+使用 $selfguide-server。
 
 任务：分析这次实验失败的原因，并完成可验证的修复。
 材料：<服务器上的代码、日志和结果路径>
 验收标准：<预期行为、指标或必须通过的检查>
 
-让 astra 网页版主导方案；缺失信息由你取证并补充。
+让 selfguide 网页版主导方案；缺失信息由你取证并补充。
 按反馈持续执行，提交真实结果和验证证据，只有需要我决定时才问我。
 ```
 
-本地浏览器版将第一行换成 `$chatgpt-supervised-local`。你可以直接给服务器文件路径，也可以将候选材料放进 `astra/inbox/` 再说明任务；Codex 按任务选择材料，放入文件本身不会触发上传。
+本地浏览器版将第一行换成 `$selfguide-local`。你可以直接给服务器文件路径，也可以将候选材料放进 `selfguide/inbox/` 再说明任务；Codex 按任务选择材料，放入文件本身不会触发上传。
 
 ## 明确分工，保留你的控制权
 
 | 职责 | 负责什么 |
 | :--- | :--- |
 | **你** | 定义目标、约束与完成标准，处理独有信息和关键决定 |
-| **网页版 ChatGPT** | 主导总体方案，提出信息需求，决定下一步并评审证据 |
+| **网页版 ChatGPT** | 主导方案、信息需求与验收，负责正文起草和实质改写 |
 | **Codex** | 读取环境与文件，按需求补充事实，执行、修复、独立验证和反馈 |
 
 日常信息收集和可逆修复由 Codex 处理；关键路线与假设变化带着证据交回网页讨论。网页建议受原任务范围约束，Codex 仍需核对实际情况。
 
 **档位策略：网页版默认 xhigh（Extra High），明显困难的推理问题按需选择网页版 Pro。** 这个判断由 Codex 处理，不修改 Codex 自身的模型或推理档位，也不代表升级订阅。服务器版通过可见网页控件操作；本地扩展尚无自动切档命令，需要本地用户或可用的本地操作工具配合。
 
-[阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/selfguide/blob/main/skills/chatgpt-supervised-server/references/leadership.md)
+[阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/selfguide/blob/main/skills/selfguide-server/references/leadership.md)
+
+## 写作也由网页端完成
+
+论文、报告、README、图表说明，以及翻译、润色和实质改写，都由网页版直接给出可交付正文。网页版自主组织结构、思路与表达；Codex 按需补充背景和材料，协助保存与排版，需要内容修改时再交回网页版。
+
+[查看写作分工 →](skills/selfguide-server/references/writing.md)
 
 ## 反馈直接交接原文
 
@@ -150,12 +156,12 @@ SelfGuide 延续已有的 `$chatgpt-supervised-server` 和 `$chatgpt-supervised-
 
 每轮自动附上任务号、轮次和首尾标记，接收时检查，原文与来源记录保存在 `feedback/` 和 `state.json`。遇到格式不符，先重取并核对；确需例外时留下核对说明，避免靠截图猜测或补全指令。本地扩展暂不支持下载文件自动回传服务器。
 
-[查看文本交接与恢复规则 →](skills/chatgpt-supervised-server/references/text-handoff.md)
+[查看文本交接与恢复规则 →](skills/selfguide-server/references/text-handoff.md)
 
 ## 每一步，都留下可追溯的证据
 
 ```text
-astra/
+selfguide/
 ├── inbox/                    候选材料，按需建立
 └── tasks/<任务 ID>/
     ├── task.txt              目标与验收要求

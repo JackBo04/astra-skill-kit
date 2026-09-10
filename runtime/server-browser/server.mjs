@@ -9,7 +9,10 @@ import {WebSocketServer} from 'ws';
 
 process.umask(0o077);
 const codeRoot = path.dirname(fileURLToPath(import.meta.url));
-const base = process.env.CHATGPT_BROWSER_HOME || path.join(process.env.HOME, '.local/share/codex-chatgpt-browser');
+const currentHome = path.join(process.env.HOME, '.local/share/selfguide-browser');
+const legacyHome = path.join(process.env.HOME, '.local/share/codex-chatgpt-browser');
+const base = process.env.SELFGUIDE_BROWSER_HOME || process.env.CHATGPT_BROWSER_HOME ||
+  (fs.existsSync(currentHome) || !fs.existsSync(legacyHome) ? currentHome : legacyHome);
 for (const name of ['run', 'logs']) fs.mkdirSync(path.join(base, name), {recursive:true,mode:0o700});
 const configPath = path.join(base, 'run/config.json');
 const config = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath)) : {
@@ -46,7 +49,7 @@ async function pasteManually(text) {
 }
 function launch(name, args) {
   const fd = fs.openSync(path.join(base,'logs',name+'.log'), 'a', 0o600);
-  const child = spawn(name==='Xvfb-local' ? (process.env.ASTRA_XVFB || 'Xvfb') : path.join(bin,name), args, {env, cwd:bin, stdio:['ignore',fd,fd]});
+  const child = spawn(name==='Xvfb-local' ? (process.env.SELFGUIDE_XVFB || process.env.ASTRA_XVFB || 'Xvfb') : path.join(bin,name), args, {env, cwd:bin, stdio:['ignore',fd,fd]});
   fs.closeSync(fd);
   children.push(child);
   child.on('error', e => {log(`${name}: ${e.message}`); shutdown(1);});
@@ -118,11 +121,11 @@ async function main() {
   await waitFor(()=>portReady(config.vncPort));
   {
     const fd=fs.openSync(path.join(base,'logs/manual-chrome.log'),'a',0o600);
-    const child=spawn(process.env.ASTRA_CHROME || '/opt/google/chrome/chrome',[
+    const child=spawn(process.env.SELFGUIDE_CHROME || process.env.ASTRA_CHROME || '/opt/google/chrome/chrome',[
       '--user-data-dir='+path.join(base,'profile-manual'),
       '--no-first-run','--no-default-browser-check','--window-size=1440,960','--window-position=0,0',
-      '--disable-dev-shm-usage',...(process.env.ASTRA_ALLOW_NO_SANDBOX==='1'?['--no-sandbox']:[]),
-      fs.existsSync(path.join(base,'run/astra-project.json')) ? JSON.parse(fs.readFileSync(path.join(base,'run/astra-project.json'))).url : 'https://chatgpt.com/',
+      '--disable-dev-shm-usage',...((process.env.SELFGUIDE_ALLOW_NO_SANDBOX || process.env.ASTRA_ALLOW_NO_SANDBOX)==='1'?['--no-sandbox']:[]),
+      ['selfguide-project.json','astra-project.json'].map(name=>path.join(base,'run',name)).filter(file=>fs.existsSync(file)).map(file=>JSON.parse(fs.readFileSync(file)).url)[0] || 'https://chatgpt.com/',
     ],{env,stdio:['ignore',fd,fd]});
     fs.closeSync(fd);children.push(child);
     child.on('error',e=>{log('Manual Chrome: '+e.message);shutdown(1);});

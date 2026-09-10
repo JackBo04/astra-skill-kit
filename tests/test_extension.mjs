@@ -8,14 +8,14 @@ import crypto from 'node:crypto';
 import {spawn,spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
-const require=createRequire(process.env.ASTRA_TEST_MODULE_ROOT || import.meta.url);
+const require=createRequire(process.env.SELFGUIDE_TEST_MODULE_ROOT || import.meta.url);
 const {chromium}=require('playwright');
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'astra-extension-test-'));
+const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'selfguide-extension-test-'));
 const project='https://chatgpt.com/g/g-p-fixture/project';
 const port=await new Promise(resolve=>{const s=net.createServer();s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(()=>resolve(p));});});
-const env={...process.env,ASTRA_LOCAL_HOME:path.join(tmp,'bridge')};
-const bridge=path.join(root,'skills/chatgpt-supervised-local/scripts/bridge.py');
+const env={...process.env,SELFGUIDE_LOCAL_HOME:path.join(tmp,'bridge')};
+const bridge=path.join(root,'skills/selfguide-local/scripts/bridge.py');
 const init=spawnSync('python',[bridge,'init','--project-url',project,'--port',String(port)],{env,encoding:'utf8'});
 assert.equal(init.status,0,init.stderr);
 const cfg=JSON.parse(await fs.readFile(path.join(tmp,'bridge/config.json'),'utf8'));
@@ -36,13 +36,13 @@ async function command(action,extra={}){
  }
  throw Error('Fixture command timeout: '+action);
 }
-const fixture=`<!doctype html><title>Astra test fixture</title><aside>PRIVATE SIDEBAR SHOULD NOT BE READ</aside><main id="messages"></main>
+const fixture=`<!doctype html><title>SelfGuide test fixture</title><aside>PRIVATE SIDEBAR SHOULD NOT BE READ</aside><main id="messages"></main>
 <form><textarea id="prompt-textarea"></textarea><input type="file" hidden><div id="attachments"></div><button type="button" data-testid="send-button">Send</button></form>
 <script>
 let uploaded='';
 document.querySelector('input[type=file]').onchange=async e=>{uploaded=await e.target.files[0].text();document.querySelector('#attachments').innerHTML='<div data-testid="attachment-card">'+e.target.files[0].name+'</div>';};
 document.querySelector('[data-testid=send-button]').onclick=()=>{
- const input=document.querySelector('textarea');const article=document.createElement('article');const user=document.createElement('div');user.dataset.messageAuthorRole='user';user.textContent=input.value;article.append(user);document.querySelector('main').append(article);input.value='';document.querySelector('#attachments').innerHTML='';history.replaceState({},'', '/g/g-p-fixture-astra/c/fixture-1');
+ const input=document.querySelector('textarea');const article=document.createElement('article');const user=document.createElement('div');user.dataset.messageAuthorRole='user';user.textContent=input.value;article.append(user);document.querySelector('main').append(article);input.value='';document.querySelector('#attachments').innerHTML='';history.replaceState({},'', '/g/g-p-fixture-selfguide/c/fixture-1');
  const stop=document.createElement('button');stop.dataset.testid='stop-button';document.body.append(stop);
  setTimeout(()=>{const article=document.createElement('article');const assistant=document.createElement('div');assistant.dataset.messageAuthorRole='assistant';assistant.textContent='FIXTURE_ACCEPTED '+uploaded;article.append(assistant);const copy=document.createElement('button');copy.dataset.testid='copy-turn-action-button';copy.textContent='Copy';article.append(copy);document.querySelector('main').append(article);stop.remove();},400);
 };
