@@ -1,48 +1,125 @@
-# Astra · ChatGPT 指导 Codex
+# Astra · 让自己的 ChatGPT 指导 Codex 干活
 
-给 Codex 一个任务，让自己账户的网页版 ChatGPT 提方案、回答执行问题、评审实际结果；Codex 在所连接的服务器上持续执行，直到满足验收标准。两个版本均把每个任务的新会话放进配置的 **astra** 项目，后续沿用该会话，并在服务器保存完整任务记录。
+给 Codex 一个任务，让自己账户的网页版 ChatGPT 提建议、解答执行问题、评审实际结果。Codex 在你连接的服务器上执行、验证、上传材料并反馈，按建议继续推进，直到达到任务的验收标准。
 
-| 版本 | Codex 在哪里执行 | ChatGPT 浏览器在哪里 | 适用情况 |
+**两个版本都在服务器执行任务，只是浏览器的位置不同。** 每个新任务在网页版 **astra** 项目中建立专用会话，后续提问与反馈沿用原会话；服务器保存材料、完整收发、结果和恢复记录。
+
+## 选哪个版本
+
+| 版本 | ChatGPT 浏览器在哪里 | 适用场景 | Codex 调用名称 |
 | --- | --- | --- | --- |
-| `chatgpt-supervised-server` | 你连接的服务器 | 服务器专用 Chrome，通过远程画面查看 | 保持目前已经登录的服务器浏览器方案 |
-| `chatgpt-supervised-local` | 你连接的服务器 | 你电脑上的 Chrome／Edge，安装随包扩展 | 使用本地浏览器登录，通过 SSH 传递消息和附件 |
+| 服务器浏览器版 | 服务器普通 Chrome，你通过远程画面操作 | 继续使用已经登录的服务器浏览器 | `$chatgpt-supervised-server` |
+| 本地浏览器版 | 自己电脑上的 Chrome／Edge | 希望复用本地浏览器登录，通过 SSH 与服务器互通 | `$chatgpt-supervised-local` |
 
-下载 [Releases](https://github.com/JackBo04/astra-skill-kit/releases) 中对应 ZIP。两个包都包含安装工具、skill 和中文说明。本地版另含浏览器扩展，服务器版另含远程桌面服务源码。浏览器程序和第三方依赖按说明安装，不在 ZIP 中分发。
+服务器方案已经完成真实 ChatGPT 的附件上传、指导执行、结果回传和验收。本地版已通过真实浏览器扩展与模拟页面的联调，**还需在你的电脑和真实 ChatGPT 页面完成首次验收**。详见 [验证记录](docs/validation.md)。
 
-- [服务器浏览器版：安装和使用](docs/server-browser.md)
-- [本地浏览器版：安装和使用](docs/local-browser.md)
-- [已验证范围与限制](docs/validation.md)
+## 复制给 Agent，一条指令开始安装
 
-## 如何给任务
+在**已经连接目标服务器的 Codex／Agent 会话**中，复制以下任意一段。Agent 会按 [Agent 安装规范](docs/agent-install.md) 检查环境、安装对应 skill、完成可执行的配置并验证。
 
-安装后，在连接目标服务器的 Codex 新会话中说：
+### 安装服务器浏览器版
+
+```text
+请在你当前连接的服务器上安装并配置 https://github.com/JackBo04/astra-skill-kit 的服务器浏览器版。先读取仓库 README.md 和 docs/agent-install.md，再按其中 server 流程执行。复用已有 astra 项目、浏览器和登录状态，完成可自动执行的安装与检查，并用合成附件验证“上传→网页指导→本地执行→结果回传→验收”。普通安装和可逆修复直接处理；只有缺少必要信息、需要我登录或确实需要我决定时再问我。最后给我安装位置、验证结果和后续任务调用示例。
+```
+
+### 安装本地浏览器版
+
+```text
+请在你当前连接的服务器上安装并配置 https://github.com/JackBo04/astra-skill-kit 的本地浏览器版。先读取仓库 README.md 和 docs/agent-install.md，再按其中 local 流程执行。Codex 仍在服务器干活，ChatGPT 浏览器使用我自己电脑上的 Chrome／Edge。先完成服务器端安装和配置，再一次性给我本地扩展下载入口、SSH 转发命令和配对步骤；连接后用合成附件完成两轮真实验收。普通安装和可逆修复直接处理，仅在缺少必要信息或需要我在本机操作时再问我。不要把服务器端安装完成当成本地浏览器已经连接成功。
+```
+
+“给 Agent 一条指令”表示让它接手安装流程。初次登录、人机验证，以及本地电脑上的扩展安装和配对，仍需你亲自操作。后续任务复用已有登录，是否需要重新验证由网站决定。
+
+### 私有仓库访问
+
+本仓库目前是私有仓库。Agent 需要使用拥有访问权限的 GitHub 账户；网页显示 404 时，先检查登录和仓库权限。已有 GitHub CLI 登录或 SSH 凭据可以直接复用。尚未授权时，由你在自己的终端运行 `gh auth login`，不要把访问令牌发到对话里。
+
+若 Agent 无法直接读取私有链接，可让它用已授权的 `gh repo clone JackBo04/astra-skill-kit` 下载后读取本地文件；也可自行下载 ZIP，把解压路径交给它。
+
+## 自己在终端安装
+
+[下载发布包](https://github.com/JackBo04/astra-skill-kit/releases)，在服务器解压、进入包目录后执行对应命令：
+
+```bash
+# 服务器浏览器版
+python3 tools/install.py server
+
+# 本地浏览器版
+python3 tools/install.py local
+```
+
+安装器默认放到 `~/.agents/skills/`，遇到同名目录会停止，保护原有安装。安装后开一个新的 Codex 会话，以便发现新增 skill。
+
+如果服务器已安装并登录 GitHub CLI，且当前目录下没有同名仓库，也可直接使用下面的一行命令下载并安装 skill：
+
+```bash
+# 服务器浏览器版
+ gh repo clone JackBo04/astra-skill-kit && python3 astra-skill-kit/tools/install.py server
+
+# 本地浏览器版（二选一执行）
+ gh repo clone JackBo04/astra-skill-kit && python3 astra-skill-kit/tools/install.py local
+```
+
+这些终端命令只完成 **skill 安装**。浏览器服务、项目配置、本地扩展及登录的步骤见对应指南；上面的 Agent 指令会继续处理这些步骤。
+
+- [服务器浏览器版：依赖、配置、远程登录和恢复](docs/server-browser.md)
+- [本地浏览器版：服务器配置、SSH、扩展与配对](docs/local-browser.md)
+
+## 安装后怎么给任务
+
+在连接服务器的 Codex 新会话中说：
 
 ```text
 使用 $chatgpt-supervised-server。
 请让 astra 网页版指导你完成：<任务>。
 材料在：<服务器文件路径>。
 验收标准：<怎样算完成>。
-按它的反馈继续执行并提交实际结果，只有确实需要我做决定时才问我。
+按反馈继续执行并提交实际结果，只有确实需要我做决定时才问我。
 ```
 
-本地浏览器版把第一行换成 `$chatgpt-supervised-local`。日常任务不必手动操作每轮收发命令，Codex 根据 skill 处理。
+本地浏览器版把第一行换成 `$chatgpt-supervised-local`。每轮收发由 Codex 按 skill 处理，不需要你手动搬运消息。网页版的建议受原任务范围约束，Codex 仍需核对现场事实和独立验证。
 
-每个任务在当前工作区建立 `astra/tasks/<任务 ID>/`：`uploads` 是选定附件副本，`messages` 是出站说明，`feedback` 是网页回复，`outputs` 是交付物，`checks` 是验证与恢复证据。`state.json` 保存进度和网页会话地址。也可把候选文件放在 `astra/inbox/` 再告诉 Codex 任务，放入文件本身不会自动上传。
+服务器文件可直接给路径，也可放在当前工作区 `astra/inbox/` 后说明任务。放入文件本身不会自动上传；Codex 只选择任务所需材料。电脑本地的材料先放到服务器可访问的位置。
 
-登录由你亲自在浏览器完成，随后复用浏览器现有登录状态；网站要求重新登录或验证时仍需你处理。扩展和远程服务不自行唤醒 Codex，也不替代 Codex 持续运行。网页建议始终受原任务范围约束。
+## 文件保存在什么地方
 
-## 开发与打包
+```text
+当前工作区/astra/
+├── inbox/                    候选材料，可按需建立
+└── tasks/<任务 ID>/
+    ├── task.txt              目标与验收要求
+    ├── state.json            进度、轮次与网页会话地址
+    ├── uploads/              选定附件副本及来源校验清单
+    ├── messages/             发给网页版的说明
+    ├── feedback/             网页版完整回复
+    ├── outputs/              执行生成的结果
+    └── checks/               验证证据与恢复记录
+```
 
-Python 3.10+；服务器浏览器服务需要 Node.js 20+。本地版的服务器桥接仅使用 Python 标准库。扩展无需构建。
+原研究文件留在原处。浏览器登录状态与任务材料分开存放，不打入安装包，也不上传到 GitHub。
+
+## 运行条件与常见问题
+
+- **要反复登录吗？** 默认保留并复用浏览器登录；网站使会话失效或要求验证时需要你处理，不能保证永不重新登录。
+- **没有图形界面的服务器能用吗？** 服务器版通过 Xvfb 提供虚拟桌面；本地版的服务器桥接只需要 Python，浏览器运行在你电脑上。
+- **本地电脑能关机吗？** 本地版需要电脑、浏览器和 SSH 隧道保持运行，休眠或断线后按任务记录恢复。服务器版的远程查看页面可关闭，服务器 Chrome 继续运行。
+- **会重复发消息吗？** 程序保存发送状态；结果不明时应检查原记录和网页，不能直接重发。
+- **文件多大都能上传吗？** 本地桥接默认单文件最多 8 MiB；这是程序限制，不是网站官方上限。大材料先提取相关样本、摘要或图表，实际上传以网页结果为准。
+- **安装后会自动启动 Codex 吗？** 不会。需要在运行中的 Codex 会话给出任务，桥接服务只负责协助收发。
+
+## 开发与验证
+
+以下命令在完整仓库源码中运行。Python 3.10+；服务器浏览器服务需要 Node.js 20+，系统桌面依赖见对应指南。本地版的 Python 桥接仅使用标准库，扩展无需编译。
 
 ```bash
-python -m unittest discover -s tests -p 'test_*.py' -v
+python3 -m unittest discover -s tests -p 'test_*.py' -v
 npm ci
 npx playwright install chromium
 node tests/test_extension.mjs
-python tools/package.py
+python3 tools/package.py
 ```
 
-最后一条生成两个 ZIP 和 `dist/SHA256SUMS`。打包只从列出的源码目录收集文件，不收集浏览器配置、登录资料、聊天记录或研究文件。仓库默认不含运行状态。
+打包生成两个 ZIP 和 `dist/SHA256SUMS`，只收集列出的源码和说明目录。扩展测试使用模拟页面，不能代替实际账户的首次验收。
 
-安装位置遵循 [OpenAI 官方 skill 文档](https://developers.openai.com/codex/skills)；本地扩展的页面通信与服务器请求分别使用 Chrome 的 [消息传递](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) 和 [扩展网络请求](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests) 能力。
+参考：[OpenAI 官方 skill 文档](https://developers.openai.com/codex/skills)、Chrome 扩展的 [消息传递](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) 与 [网络请求](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)。
