@@ -8,8 +8,8 @@ root=Path(__file__).resolve().parents[1]
 out=root/'dist';out.mkdir(exist_ok=True)
 manifest={}
 for variant in ['server','local']:
- name='astra-'+variant+'-browser-v0.1.2'
- sources=[root/'README.md',root/'docs',root/'tools/install.py',root/'skills'/('chatgpt-supervised-'+variant)]
+ name='astra-'+variant+'-browser-v0.1.3'
+ sources=[root/'README.md',root/'LICENSE',root/'docs',root/'tools/install.py',root/'skills'/('chatgpt-supervised-'+variant)]
  sources.append(root/'runtime/server-browser' if variant=='server' else root/'extension')
  paths=set()
  for source in sources:

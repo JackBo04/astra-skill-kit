@@ -6,7 +6,7 @@
 
 用户选择的版本已经明确时直接执行；本地版和服务器版的 Codex 都运行在当前连接的服务器上。没有明确版本时检查用户上下文和现有浏览器部署，无法判断才问一次。
 
-本仓库私有，先复用现有 GitHub 授权。可使用 `gh repo view JackBo04/astra-skill-kit` 检查访问，`gh repo clone JackBo04/astra-skill-kit <目标目录>` 下载。已存在的正确仓库先检查工作树，不覆盖用户修改，不强制重置；记录所用提交。GitHub CLI 不可用时使用已经授权的 Git SSH 或用户提供的发行包。没有授权时由用户完成正常 GitHub 登录，不要求其在聊天中提供令牌。
+本仓库为公开的 MIT 开源仓库。直接使用 `git clone https://github.com/JackBo04/astra-skill-kit.git <目标目录>` 下载，无需用户提供 GitHub 授权。已存在的正确仓库先检查工作树，不覆盖用户修改，不强制重置；记录所用提交。用户提供发行包时也可从解压目录安装。
 
 读取本仓库 README、本文、所选 `docs/server-browser.md` 或 `docs/local-browser.md`、对应 `skills/chatgpt-supervised-<版本>/SKILL.md`。同时遵守当前工作区已有指令。
 

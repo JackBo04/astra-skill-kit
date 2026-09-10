@@ -42,11 +42,15 @@
 
 “给 Agent 一条指令”表示让它接手安装流程。初次登录、人机验证，以及本地电脑上的扩展安装和配对，仍需你亲自操作。后续任务复用已有登录，是否需要重新验证由网站决定。
 
-### 私有仓库访问
+### 获取源码
 
-本仓库目前是私有仓库。Agent 需要使用拥有访问权限的 GitHub 账户；网页显示 404 时，先检查登录和仓库权限。已有 GitHub CLI 登录或 SSH 凭据可以直接复用。尚未授权时，由你在自己的终端运行 `gh auth login`，不要把访问令牌发到对话里。
+本仓库采用 [MIT License](LICENSE) 开源，读取和下载无需 GitHub 登录：
 
-若 Agent 无法直接读取私有链接，可让它用已授权的 `gh repo clone JackBo04/astra-skill-kit` 下载后读取本地文件；也可自行下载 ZIP，把解压路径交给它。
+```bash
+git clone https://github.com/JackBo04/astra-skill-kit.git
+```
+
+Agent 可直接读取公开链接，或下载后读取本地说明。浏览器登录资料、配对码、聊天记录和研究材料留在各自运行环境中。
 
 ## 自己在终端安装
 
@@ -62,14 +66,14 @@ python3 tools/install.py local
 
 安装器默认放到 `~/.agents/skills/`，遇到同名目录会停止，保护原有安装。安装后开一个新的 Codex 会话，以便发现新增 skill。
 
-如果服务器已安装并登录 GitHub CLI，且当前目录下没有同名仓库，也可直接使用下面的一行命令下载并安装 skill：
+如果服务器已安装 Git 和 Python，且当前目录下没有同名仓库，也可直接使用下面的一行命令下载并安装 skill：
 
 ```bash
 # 服务器浏览器版
- gh repo clone JackBo04/astra-skill-kit && python3 astra-skill-kit/tools/install.py server
+git clone https://github.com/JackBo04/astra-skill-kit.git && python3 astra-skill-kit/tools/install.py server
 
 # 本地浏览器版（二选一执行）
- gh repo clone JackBo04/astra-skill-kit && python3 astra-skill-kit/tools/install.py local
+git clone https://github.com/JackBo04/astra-skill-kit.git && python3 astra-skill-kit/tools/install.py local
 ```
 
 这些终端命令只完成 **skill 安装**。浏览器服务、项目配置、本地扩展及登录的步骤见对应指南；上面的 Agent 指令会继续处理这些步骤。
@@ -134,3 +138,7 @@ python3 tools/package.py
 打包生成两个 ZIP 和 `dist/SHA256SUMS`，只收集列出的源码和说明目录。扩展测试使用模拟页面，不能代替实际账户的首次验收。
 
 参考：[OpenAI 官方 skill 文档](https://developers.openai.com/codex/skills)、Chrome 扩展的 [消息传递](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) 与 [网络请求](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)。
+
+## 开源许可
+
+采用 [MIT License](LICENSE)，允许使用、修改和分发，需保留许可证与版权声明。依赖软件按各自许可证分发。
