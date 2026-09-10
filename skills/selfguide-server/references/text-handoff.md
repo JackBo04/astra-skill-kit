@@ -11,8 +11,8 @@
 ## 接收
 
 1. 确认当前任务会话、本轮消息和生成结束。
-2. 服务器版优先点击本轮代码块的复制按钮，也可复制整条回复；`desktop.py copy-reply` 保存剪贴板原文。本地版通过 `bridge.py reply` 读取 DOM，保留返回 JSON 中的完整 `result.text`；若有 `result.handoff_text`，它是唯一交接代码块的原始正文，优先将其保存供登记，避免把代码块工具栏文字带入。核对块外没有遗漏的执行信息；没有该字段则保存 `result.text`，不手动重写。
-3. `session.py reply --run <run> --file <原文.txt> --source clipboard` 登记服务器复制结果；本地 DOM 用 `--source dom`，确实已取得的下载正文用 `--source download`。脚本保存原文到 `feedback/in-NNN.txt`，记录 SHA-256、声明的来源和格式检查结果。
+2. 两个版本均优先使用 `wait_reply.py` 或 `bridge.py reply` 读取 DOM，保留返回 JSON 中的完整 `result.text`；若有 `result.handoff_text`，它是唯一交接代码块的原始正文，优先将其保存供登记，避免把代码块工具栏文字带入。核对块外没有遗漏的执行信息；没有该字段则保存 `result.text`，不手动重写。
+3. `session.py reply --run <run> --file <原文.txt> --source dom` 登记 DOM 原文；仅异常时的桌面复制用 `--source clipboard`，确实已取得的下载正文用 `--source download`。脚本保存原文到 `feedback/in-NNN.txt`，记录 SHA-256、声明的来源和格式检查结果。
 4. 新任务检查任务号、轮次、结束标记与非空正文，拒绝明显截断或错轮次。标记并不能证明语义完整或真实性，来源字段也是调用者声明；Codex 仍须核对现场事实与完整内容后执行。
 
 复制失败先重试复制，不重发原任务。格式检查失败不修改、补齐网页原文；先核对当前回复并重新获取。如果网页确实没有遵守格式，但已从完整文本确认它属于本轮、生成结束且信息完整，可以在 `checks/` 写明核对证据，用 `--format-note-file <核对说明.txt>` 留痕接收。此参数只豁免格式，不能替代完整文本获取。下一轮提醒网页版遵守格式。无法确认完整性时保存暂停检查点，不执行猜测出的建议。

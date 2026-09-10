@@ -79,7 +79,9 @@ def main():
             item.add_argument('--note-file', type=Path, required=True)
     args = parser.parse_args()
     if args.action == 'new':
-        project = json.loads(project_file(BASE).read_text())
+        dom_config = Path(os.environ.get('SELFGUIDE_BRIDGE_HOME', BASE / 'dom-bridge')).expanduser() / 'config.json'
+        project = ({'name':'selfguide','url':json.loads(dom_config.read_text())['project_url']}
+                   if dom_config.exists() else json.loads(project_file(BASE).read_text()))
         if project['name'] not in ['selfguide', 'astra']:
             raise ValueError('All new conversations must belong to selfguide.')
         task = text_file(args.task_file)

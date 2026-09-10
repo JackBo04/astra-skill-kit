@@ -80,7 +80,7 @@ def main():
     args = parser.parse_args()
     if args.action == 'new':
         from config_paths import local_home
-        bridge_base = local_home()
+        bridge_base = Path(os.environ['SELFGUIDE_BRIDGE_HOME']).expanduser() if os.environ.get('SELFGUIDE_BRIDGE_HOME') else local_home()
         bridge_config = json.loads((bridge_base / 'config.json').read_text())
         project = {'name': 'selfguide', 'url': bridge_config['project_url']}
         if project['name'] not in ['selfguide', 'astra']:

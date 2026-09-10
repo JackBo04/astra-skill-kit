@@ -27,26 +27,24 @@ async function poll() {
     }
     const info = await rpc(cfg, '/info');
     const tab = await chrome.tabs.get(cfg.tabId);
-    // A login page, CAPTCHA or unrelated chat must never receive queued work.
-    if (!tab.url || !inProject(tab.url, info.project_key)) {
-      await chrome.storage.local.set({status:'请在已绑定标签页打开配置的 selfguide 项目；登录和验证需手动完成。'});
-      return;
-    }
     const job = await rpc(cfg, '/poll');
     if (job.idle) { await chrome.storage.local.set({status:'已连接，等待 Codex 任务'}); return; }
     let result;
     try {
-      if (job.command.action === 'project') {
+      if (!tab.url || !inProject(tab.url, info.project_key)) throw Object.assign(new Error('绑定标签页需要登录、验证或返回已配置项目。'), {code:'page_unavailable'});
+      if (tab.status === 'loading') {
+        result = {status:'waiting',reason:'page_loading'};
+      } else if (job.command.action === 'project') {
         // A fresh project landing page creates the next chat on its first send.
         const state = await chrome.tabs.sendMessage(cfg.tabId, {type:'selfguide-command', id:job.id,
-          command:{action:'snapshot',expected_url:cleanURL(tab.url)}});
-        if (state.error || state.generating || state.draft || state.attachments?.length) throw Error('当前页面有未完成生成、草稿或附件；先处理再创建新会话。');
+          command:{action:'status',expected_url:cleanURL(tab.url)}});
+        if (state.error || state.generating || state.draft_present || state.attachments?.length) throw Error('当前页面有未完成生成、草稿或附件；先处理再创建新会话。');
         await chrome.tabs.update(cfg.tabId, {url:job.project_url});
-        result = {navigated:true,url:job.project_url,next:'Wait for project page and inspect snapshot before composing.'};
+        result = {navigated:true,url:job.project_url,next:'Read compact status until the project composer is ready.'};
       } else {
         result = await chrome.tabs.sendMessage(cfg.tabId, {type:'selfguide-command',id:job.id,command:job.command});
       }
-    } catch (error) { result = {error:String(error.message || error),uncertain:true}; }
+    } catch (error) { result = {status:'blocked',error:String(error.message || error),code:error.code || 'extension_unavailable',uncertain:true,screenshot_recommended:true}; }
     const pendingResult = {id:job.id,result};
     // Persist before acknowledgement; never run the action again after a lost response.
     await chrome.storage.local.set({pendingResult,status:result.error ? '操作暂停：' + result.error : '已完成本次网页操作'});

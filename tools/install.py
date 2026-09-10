@@ -17,6 +17,7 @@ def build(destination, variant, name):
     if variant == 'server':
         shutil.copytree(ROOT/'runtime/server-browser', destination/'runtime/server-browser',
                         dirs_exist_ok=True, ignore=IGNORE)
+    shutil.copytree(ROOT/'extension', destination/'extension', dirs_exist_ok=True, ignore=IGNORE)
     if name == 'selfguide':
         for file in [destination/'SKILL.md', destination/'agents/openai.yaml']:
             if file.exists():
