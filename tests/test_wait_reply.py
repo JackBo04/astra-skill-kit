@@ -45,6 +45,15 @@ class WaitReplyTest(unittest.TestCase):
         state=json.loads(self.args.out.read_text());self.assertFalse(state['screenshot_recommended'])
         self.assertNotIn('PRIVATE PARTIAL',self.args.out.read_text()+output)
         self.assertTrue(all(body['command']['action']=='reply-status' for route,body in self.calls if route=='/command'))
+    def test_resume_cannot_switch_to_another_window(self):
+        task=self.root/'task';task.mkdir();(task/'state.json').write_text(json.dumps({'id':'task-a'}))
+        self.args.run=task
+        self.assertEqual(self.call({'status':'waiting','reason':'generating'})[0],3)
+        commands=[body['command'] for route,body in self.calls if route=='/command']
+        self.assertTrue(commands);self.assertTrue(all(c['session']=='task-a' for c in commands))
+        self.args.resume=True
+        (task/'state.json').write_text(json.dumps({'id':'task-b'}))
+        with self.assertRaises(ValueError):self.call({})
     def test_blocked_page_has_diagnostic_but_no_reply(self):
         self.assertEqual(self.call({'status':'blocked','code':'page_unavailable','error':'login','screenshot_recommended':True})[0],2)
         self.assertFalse(self.args.reply_out.exists())

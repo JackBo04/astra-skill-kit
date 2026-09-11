@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
+  "minimum_chrome_version": "120",
   "name": "SelfGuide Text Bridge — Experimental",
   "version": "0.5.0",
   "version_name": "0.5.0-dom.1 experimental",
-  "description": "Connect one selected ChatGPT project tab to Codex on your own server through an SSH tunnel.",
+  "description": "Give each Codex task its own ChatGPT window, sharing your existing browser login.",
   "permissions": ["storage", "alarms", "activeTab"],
   "host_permissions": ["https://chatgpt.com/*", "http://127.0.0.1/*"],
   "background": {"service_worker": "background.js"},

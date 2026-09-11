@@ -19,8 +19,11 @@
       return copy.textContent;
     }).join('\n');
   }
-  const userMatches = (el, expected) => !!el &&
-    (norm(text(el)) === norm(expected) || norm(el.textContent || '') === norm(expected));
+  const userContent = el => el?.querySelector('[data-testid="collapsible-user-message-content"]') || el;
+  const userMatches = (el, expected) => {
+    const content = userContent(el);
+    return !!content && (norm(text(content)) === norm(expected) || norm(content.textContent || '') === norm(expected));
+  };
   const button = selectors => [...document.querySelectorAll(selectors)].find(visible);
   const stop = () => button('[data-testid="stop-button"],button[aria-label="Stop generating"],button[aria-label="停止生成"]');
   const sendButton = () => button('[data-testid="send-button"],button[aria-label="Send prompt"],button[aria-label="Send message"],button[aria-label="发送提示"],button[aria-label="发送消息"]');
@@ -35,7 +38,7 @@
     const users = userMessages(), assistants = assistantMessages(), e = editor();
     return {url:location.origin + location.pathname,composer:!!e,draft:draftText(e),generating:!!stop(),
       user_count:users.length,assistant_count:assistants.length,
-      last_user:text(users.at(-1)),last_reply:text(assistants.at(-1)),attachments:attachments(),
+      last_user:text(userContent(users.at(-1))),last_reply:text(assistants.at(-1)),attachments:attachments(),
       notices:[...document.querySelectorAll('[role="alert"]')].filter(visible).map(el=>el.innerText).slice(-3)};
   }
   function fault(code, message) {

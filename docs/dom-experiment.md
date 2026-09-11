@@ -45,12 +45,22 @@ ssh -N -L 127.0.0.1:8766:127.0.0.1:8766 your-server
 
 结束独立试用时可暂停扩展和桥接；要继续使用则保持连接。替换安装后可用安装器输出的备份恢复旧 skill。服务器扩展已完成真实加载与配对，最新验收范围见 [验证记录](validation.md)。
 
+## 多窗口任务
+
+`session.py new` 为每个任务产生唯一 ID；所有 `bridge.py` 和 `wait_reply.py` 调用带 `--run <该任务目录>`。`open --run` 在后台开独立窗口，重复 open 返回原窗口；每路任务有独立队列和结果记录，不以当前前台窗口决定目标。
+
+网页生成不占用命令执行槽；扩展最多同时处理四个任务的短操作，每个任务内部保持顺序，其余排队。各窗口共用登录和账户额度。任务窗口自动平铺；不要将运行中的窗口最小化或用其他全屏窗口长期遮挡，否则浏览器可能暂停网页刷新。异常需要画面时用 `focus --run` 明确切到该任务，再截图。
+
+窗口关闭或浏览器重启导致绑定未确认时，`open --run <任务目录> --restore --out <检查文件>` 只恢复已保存的会话 URL。首次发送结果不明时，先处理原 job，不能通过新开窗口重发。旧 watcher 的恢复参数必须保持一致，不中途添加 `--run`；旧轮次结束后可以为原任务开启独立窗口。
+
 ## 自动检查
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 node tests/test_extension.mjs
+node tests/test_multi_window.mjs
 SELFGUIDE_TEST_VARIANT=server node tests/test_extension.mjs
+SELFGUIDE_TEST_VARIANT=local node tests/test_multi_window.mjs
 ```
 
 扩展测试需要 Playwright 的 Chromium（支持加载扩展）及其系统依赖。`SELFGUIDE_TEST_MODULE_ROOT` 可指向包含 Playwright 的已有 package.json，`PLAYWRIGHT_BROWSERS_PATH` 可指定已有测试浏览器。测试使用临时 profile 与受控页面，浏览器请求由测试框架拦截，不向真实 ChatGPT 发送任务。测试代码中的 `--no-sandbox` 用于当前隔离测试环境，不是已登录浏览器的升级命令。

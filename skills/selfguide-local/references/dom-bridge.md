@@ -2,23 +2,23 @@
 
 下列命令在服务器运行。`<skill>` 是实验安装目录，`<run>` 是任务目录，`<url>` 必须取自返回文件的 `result.url`，不可猜测。按本轮编号替换 `001`。命令成功后才执行下一步。
 
-新任务在配置的 selfguide 项目中新建会话；已有任务先用 `session.py status --run <run> --brief` 恢复，不能再次 `project` 新建。
+新任务在 selfguide 项目自动打开独立窗口。已有任务先读 `session.py status --run <run> --brief`；`open --run` 复用该任务窗口，不能用 `project` 重置会话。
 
 ```bash
 python <skill>/scripts/session.py new --task-file <任务.txt> --workspace <工作区>
-python <skill>/scripts/bridge.py project --out <run>/checks/project-001.json
-python <skill>/scripts/bridge.py status --out <run>/checks/status-001.json
+python <skill>/scripts/bridge.py open --run <run> --out <run>/checks/window-001.json
+python <skill>/scripts/bridge.py status --run <run> --out <run>/checks/status-001.json
 ```
 
-`status` 只返回小型状态；`composer:true` 后继续。需要附件时先 `session.py stage --run <run> --file <材料>`，再用 `bridge.py attach --file <返回的上传副本> --expect-url <url> --out <检查文件>`，确认 `upload_confirmed:true`。
+`open` 须返回 `window_opened:true`。每个任务独立编号、文件和窗口，后台按任务分别排队，正常收发不切前台。`status` 只返回小型状态；`composer:true` 后继续。需要附件时先 `session.py stage --run <run> --file <材料>`，再用 `bridge.py attach --run <run> --file <返回的上传副本> --expect-url <url> --out <检查文件>`，确认 `upload_confirmed:true`。
 
 ```bash
 python <skill>/scripts/session.py prepare --run <run> --file <本轮说明.txt>
-python <skill>/scripts/bridge.py compose --file <run>/messages/out-001.txt --expect-url <url> --out <run>/checks/compose-001.json
+python <skill>/scripts/bridge.py compose --run <run> --file <run>/messages/out-001.txt --expect-url <url> --out <run>/checks/compose-001.json
 python <skill>/scripts/session.py submitting --run <run>
-python <skill>/scripts/bridge.py send --file <run>/messages/out-001.txt --expect-url <url> --out <run>/checks/send-001.json
+python <skill>/scripts/bridge.py send --run <run> --file <run>/messages/out-001.txt --expect-url <url> --out <run>/checks/send-001.json
 python <skill>/scripts/session.py sent --run <run> --url <send返回的会话URL>
-python <skill>/scripts/wait_reply.py --file <run>/messages/out-001.txt --expect-url <会话URL> --out <run>/checks/wait-001.json --reply-out <run>/feedback/copied-001.txt
+python <skill>/scripts/wait_reply.py --run <run> --file <run>/messages/out-001.txt --expect-url <会话URL> --out <run>/checks/wait-001.json --reply-out <run>/feedback/copied-001.txt
 python <skill>/scripts/session.py reply --run <run> --file <run>/feedback/copied-001.txt --source dom
 ```
 

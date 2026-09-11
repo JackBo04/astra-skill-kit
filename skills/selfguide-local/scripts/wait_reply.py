@@ -35,6 +35,9 @@ def owned_write(path, text):
 def run(args):
     prompt = args.file.read_text(encoding='utf-8')
     command = {'action':'reply-status', 'expected_url':args.expect_url, 'text':prompt}
+    session = bridge.session_key(args.run) if getattr(args, 'run', None) else None
+    if session:
+        command['session'] = session
     bridge.validate(command, bridge.config())
     if '/c/' not in args.expect_url:
         raise ValueError('Wait only in the confirmed task conversation, not a project landing page.')
@@ -49,7 +52,7 @@ def run(args):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         if args.resume:
             state = json.loads(out.read_text())
-            if (state['url'] != args.expect_url or state['prompt_sha256'] != digest(prompt) or
+            if (state.get('session') != session or state['url'] != args.expect_url or state['prompt_sha256'] != digest(prompt) or
                     state['reply_file'] != str(reply) or state['full_reply_file'] != str(full)):
                 raise ValueError('Resume arguments do not match the saved task.')
             if state['state'] == 'ready':
@@ -61,7 +64,7 @@ def run(args):
         else:
             if out.exists() or reply.exists() or full.exists():
                 raise ValueError('Use new output paths, or --resume for the saved watcher.')
-            state = {'state':'waiting','url':args.expect_url,'prompt_sha256':digest(prompt),
+            state = {'state':'waiting','session':session,'url':args.expect_url,'prompt_sha256':digest(prompt),
                      'reply_file':str(reply),'full_reply_file':str(full),'probes':0,'polls':0,
                      'probe_id':None,'screenshot_requests':0,'started_at':time.time()}
             save(out,state)
@@ -125,6 +128,7 @@ def run(args):
 def main():
     os.umask(0o077)
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--run',type=Path,help='Route to the same isolated task window as the send.')
     p.add_argument('--file',type=Path,required=True,help='The exact sent prompt file.')
     p.add_argument('--expect-url',required=True)
     p.add_argument('--out',type=Path,required=True,help='Compact progress and recovery state.')

@@ -21,8 +21,20 @@ from config_paths import local_home
 
 BASE = Path(os.environ['SELFGUIDE_BRIDGE_HOME']).expanduser() if os.environ.get('SELFGUIDE_BRIDGE_HOME') else local_home()
 LIMIT = 12 * 1024 * 1024
-ACTIONS = {'status', 'snapshot', 'project', 'compose', 'send', 'reply', 'reply-status', 'attach'}
+ACTIONS = {'status', 'snapshot', 'project', 'compose', 'send', 'reply', 'reply-status', 'attach', 'open', 'focus'}
 MUTATIONS = ACTIONS - {'status', 'snapshot', 'reply', 'reply-status'}
+
+def session_key(run):
+    state = json.loads((run.expanduser().resolve() / 'state.json').read_text())
+    key = state['id']
+    if not isinstance(key, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,96}', key) or key == 'legacy':
+        raise ValueError('Invalid task ID for an isolated browser window.')
+    return key
+
+
+def lane(command):
+    return command.get('session', 'legacy')
+
 
 def project_key(url):
     p = urlsplit(url)
@@ -46,6 +58,15 @@ def validate(command, cfg):
     if command.get('action') not in ACTIONS:
         raise ValueError('Unknown action.')
     action = command['action']
+    if 'session' in command and (not isinstance(command['session'], str) or
+            not re.fullmatch(r'[A-Za-z0-9_-]{1,96}', command['session']) or command['session'] == 'legacy'):
+        raise ValueError('Invalid browser session.')
+    if 'restore' in command and (action != 'open' or not isinstance(command['restore'], bool)):
+        raise ValueError('Restore is only available for opening a task window.')
+    if action in {'open', 'focus'} and 'session' not in command:
+        raise ValueError('Use --run to select an isolated task window.')
+    if action == 'project' and 'session' in command:
+        raise ValueError('Use open for an isolated task; never reset its conversation.')
     if action not in {'project', 'status'} or command.get('expected_url'):
         p = urlsplit(command.get('expected_url', ''))
         key = project_key(cfg['project_url'])
@@ -113,12 +134,20 @@ class Handler(BaseHTTPRequestHandler):
                             raise ValueError('Command ID reused with a different payload.')
                     else:
                         unresolved = db.execute("SELECT payload FROM jobs WHERE state IN ('queued','claimed')").fetchall()
-                        if command['action'] in MUTATIONS and any(json.loads(row['payload'])['action'] in MUTATIONS for row in unresolved):
-                            raise ValueError('An earlier browser mutation is unresolved. Inspect its job; do not resend.')
+                        if command['action'] in MUTATIONS and any(json.loads(row['payload'])['action'] in MUTATIONS and lane(json.loads(row['payload'])) == lane(command) for row in unresolved):
+                            raise ValueError('An earlier mutation in this task is unresolved. Inspect its job; do not resend.')
                         db.execute('INSERT INTO jobs VALUES (?,?,?, ?,NULL,NULL)', (ident, raw, 'queued', time.time()))
                     result = {'id': ident}
                 elif self.path == '/poll':
-                    row = db.execute("SELECT * FROM jobs WHERE state='queued' ORDER BY created LIMIT 1").fetchone()
+                    excluded = body.get('exclude_sessions', [])
+                    if not isinstance(excluded, list) or len(excluded) > 1024 or any(
+                            not isinstance(key, str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,96}', key) for key in excluded):
+                        raise ValueError('Invalid session exclusions.')
+                    blocked = set(excluded)
+                    blocked.update(lane(json.loads(row['payload'])) for row in
+                                   db.execute("SELECT payload FROM jobs WHERE state='claimed'"))
+                    row = next((row for row in db.execute("SELECT * FROM jobs WHERE state='queued' ORDER BY created")
+                                if lane(json.loads(row['payload'])) not in blocked), None)
                     if row:
                         db.execute("UPDATE jobs SET state='claimed',claimed=? WHERE id=?", (time.time(), row['id']))
                         result = {'id': row['id'], 'command': json.loads(row['payload']), 'project_url': cfg['project_url']}
@@ -172,7 +201,9 @@ def main():
     resolve = sub.add_parser('resolve'); resolve.add_argument('id'); resolve.add_argument('--note-file', type=Path, required=True)
     for name in ACTIONS:
         command = sub.add_parser(name)
-        if name != 'project': command.add_argument('--expect-url', required=name != 'status')
+        if name == 'open': command.add_argument('--restore', action='store_true', help='Explicitly restore a closed/unverified task window from its saved conversation URL.')
+        command.add_argument('--run', type=Path, help='Route exclusively to this task window.')
+        if name != 'project': command.add_argument('--expect-url', required=name not in {'status', 'open'})
         if name in {'compose', 'send', 'reply', 'reply-status', 'attach'}: command.add_argument('--file', type=Path, required=True)
         command.add_argument('--out', type=Path, required=True)
         command.add_argument('--timeout', type=int, default=45)
@@ -199,6 +230,14 @@ def main():
         print(json.dumps(request('/resolve', {'id': args.id, 'note': args.note_file.read_text()})))
     else:
         cmd = {'action': args.action}
+        if args.run:
+            args.run = args.run.expanduser().resolve()
+            cmd['session'] = session_key(args.run)
+        if args.action == 'open' and args.restore:
+            cmd['restore'] = True
+        if args.action == 'open' and not args.expect_url and args.run:
+            state = json.loads((args.run / 'state.json').read_text())
+            args.expect_url = state.get('conversation_url') or state['project_url']
         if args.action != 'project' and args.expect_url: cmd['expected_url'] = args.expect_url
         if args.action in {'compose', 'send', 'reply', 'reply-status'}: cmd['text'] = args.file.read_text()
         if args.action == 'attach':
