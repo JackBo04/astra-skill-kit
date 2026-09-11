@@ -59,7 +59,7 @@ document.querySelector('input[type=file]').onchange=async e=>{uploaded=await e.t
 document.querySelector('[data-testid=send-button]').onclick=()=>{
  const input=document.querySelector('textarea'),submitted=input.value;const article=document.createElement('article');const user=document.createElement('div');user.dataset.messageAuthorRole='user';user.textContent=input.value;article.append(user);document.querySelector('main').append(article);input.value='';document.querySelector('#attachments').innerHTML='';history.replaceState({},'', '/g/g-p-fixture-selfguide/c/fixture-1');
  const stop=document.createElement('button');stop.dataset.testid='stop-button';document.body.append(stop);
- setTimeout(()=>{const article=document.createElement('article');const assistant=document.createElement('div');assistant.dataset.messageAuthorRole='assistant';
+ setTimeout(()=>{const article=document.createElement('section');article.dataset.testid='conversation-turn-2';const assistant=document.createElement('div');assistant.dataset.messageAuthorRole='assistant';
  const lines=submitted.split('\\n'),begin=lines.find(line=>line.startsWith('SELFGUIDE_REPLY_BEGIN ')),end=lines.find(line=>line.startsWith('SELFGUIDE_REPLY_END '));
  const pre=document.createElement('pre'),code=document.createElement('code');code.textContent=begin+'\\nFIXTURE_ACCEPTED '+uploaded+'\\n'+end;pre.append(code);assistant.append(pre);
  article.append(assistant);const copy=document.createElement('button');copy.dataset.testid='copy-turn-action-button';copy.textContent='Copy';article.append(copy);document.querySelector('main').append(article);stop.remove();},window.replyDelay || 400);
@@ -80,6 +80,20 @@ try{
  const bytes=Buffer.from('random fixture marker '+crypto.randomBytes(8).toString('hex'));
  const attached=await command('attach',{file:{name:'probe.txt',mime:'text/plain',base64:bytes.toString('base64'),sha256:crypto.createHash('sha256').update(bytes).digest('hex')}});
  assert.equal(attached.file_paste_requested,true);assert.equal(attached.upload_confirmed,true);assert.ok(attached.attachments.some(a=>a.name==='probe.txt'));
+ // Match the live editor's paragraph structure and preserve intentional blank lines.
+ const paragraphText='first\n\nsecond\nsoft break';
+ await page.evaluate(()=>{
+  window.fixtureTextarea=document.querySelector('#prompt-textarea');
+  const e=document.createElement('div');e.id='prompt-textarea';e.contentEditable='true';
+  window.fixtureTextarea.replaceWith(e);
+  e.innerHTML='<p>first</p><p data-empty-paragraph="true"><br class="ProseMirror-trailingBreak"></p><p>second<br>soft break</p>';
+ });
+ assert.equal((await command('compose',{text:paragraphText})).draft_verified,true);
+ assert.equal((await command('snapshot')).draft,paragraphText);
+ const changedWhitespace=await command('send',{text:paragraphText.replace('\n\n','\n')},true);
+ assert.equal(changedWhitespace.status,'blocked','Do not silently collapse meaningful blank lines');
+ assert.equal((await command('status')).user_count,0);
+ await page.evaluate(()=>document.querySelector('#prompt-textarea').replaceWith(window.fixtureTextarea));
  const taskFile=path.join(tmp,'task.txt');await fs.writeFile(taskFile,'Use only the attached fixture file.');
  const run=session('new','--task-file',taskFile,'--workspace',path.join(tmp,'tasks'))['run'];
  const prepared=session('prepare','--run',run,'--file',taskFile);

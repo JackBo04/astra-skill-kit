@@ -7,6 +7,18 @@
   const userMessages = () => [...document.querySelectorAll('[data-message-author-role="user"]')];
   const assistantMessages = () => [...document.querySelectorAll('[data-message-author-role="assistant"]')];
   const text = el => el ? ('value' in el ? el.value : el.innerText) : '';
+  function draftText(el) {
+    // ProseMirror paragraphs have CSS margins: innerText invents extra newlines.
+    // Recover logical paragraph/BR boundaries without collapsing real blank lines.
+    const nodes = [...(el?.childNodes || [])];
+    if (!nodes.length || !nodes.every(node => node.nodeType === Node.ELEMENT_NODE && node.tagName === 'P')) return text(el);
+    return nodes.map(node => {
+      const copy = node.cloneNode(true);
+      copy.querySelectorAll('br.ProseMirror-trailingBreak').forEach(br => br.remove());
+      copy.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
+      return copy.textContent;
+    }).join('\n');
+  }
   const userMatches = (el, expected) => !!el &&
     (norm(text(el)) === norm(expected) || norm(el.textContent || '') === norm(expected));
   const button = selectors => [...document.querySelectorAll(selectors)].find(visible);
@@ -21,7 +33,7 @@
   }
   function snapshot() {
     const users = userMessages(), assistants = assistantMessages(), e = editor();
-    return {url:location.origin + location.pathname,composer:!!e,draft:text(e),generating:!!stop(),
+    return {url:location.origin + location.pathname,composer:!!e,draft:draftText(e),generating:!!stop(),
       user_count:users.length,assistant_count:assistants.length,
       last_user:text(users.at(-1)),last_reply:text(assistants.at(-1)),attachments:attachments(),
       notices:[...document.querySelectorAll('[role="alert"]')].filter(visible).map(el=>el.innerText).slice(-3)};
@@ -33,7 +45,7 @@
     const e = editor();
     const labels = [...document.querySelectorAll('button,[role="button"]')].filter(visible)
       .map(el => text(el).trim()).filter(value => /^(Extra High|xhigh|Pro)$/i.test(value));
-    return {status:'ready',url:location.origin + location.pathname,composer:!!e,draft_present:!!norm(text(e)),
+    return {status:'ready',url:location.origin + location.pathname,composer:!!e,draft_present:!!norm(draftText(e)),
       generating:!!stop(),user_count:userMessages().length,assistant_count:assistantMessages().length,
       attachments:attachments(),thinking_label:labels.length === 1 ? labels[0] : null,
       notices:[...document.querySelectorAll('[role="alert"]')].filter(visible).map(el=>text(el).slice(0,300)).slice(-3)};
@@ -49,7 +61,7 @@
     if (!userMatches(lastUser, command.text || '')) throw fault('turn_mismatch','最近用户消息与本轮不同，未读取正文。');
     if (stop()) return {status:'waiting',reason:'generating'};
     if (!last || !(lastUser.compareDocumentPosition(last) & Node.DOCUMENT_POSITION_FOLLOWING)) return {status:'waiting',reason:'no_current_reply'};
-    const turn = last.closest('article') || last.parentElement;
+    const turn = last.closest('article,[data-testid^="conversation-turn-"],.agent-turn') || last.parentElement;
     const copy = [...(turn?.querySelectorAll('[data-testid="copy-turn-action-button"],button[aria-label="Copy response"],button[aria-label="复制回复"]') || [])]
       .find(el => !el.closest('pre'));
     if (!copy) return {status:'waiting',reason:'completion_marker_missing'};
@@ -77,8 +89,8 @@
     if (command.action === 'reply' || command.action === 'reply-status') return readReply(command);
     if (stop()) throw Error('当前回复仍在生成。');
     if (command.action === 'compose') {
-      if (norm(text(e)) && norm(text(e)) !== norm(command.text)) throw Error('输入框已有不同草稿，未覆盖。');
-      if (!norm(text(e))) {
+      if (norm(draftText(e)) && norm(draftText(e)) !== norm(command.text)) throw Error('输入框已有不同草稿，未覆盖。');
+      if (!norm(draftText(e))) {
         e.focus();
         if (e.tagName === 'TEXTAREA') {
           Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(e,command.text);
@@ -90,11 +102,11 @@
         }
       }
       await pause(300);
-      if (norm(text(e)) !== norm(command.text)) throw Error('草稿文字核对失败，未发送。');
+      if (norm(draftText(e)) !== norm(command.text)) throw Error('草稿文字核对失败，未发送。');
       return {...compact(),draft_verified:true};
     }
     if (command.action === 'send') {
-      if (norm(text(e)) !== norm(command.text)) throw Error('草稿与本轮记录不一致，未发送。');
+      if (norm(draftText(e)) !== norm(command.text)) throw Error('草稿与本轮记录不一致，未发送。');
       const send = sendButton();
       if (!send || send.disabled || attachments().some(a=>a.busy) || composer()?.querySelector('[role="progressbar"],.animate-spin')) throw Error('发送按钮未就绪或附件仍在上传。');
       const baseline = userMessages().length;

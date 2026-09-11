@@ -4,7 +4,7 @@
 
 **普通收发读取网页文字，程序等待生成完成；特殊异常才截图。**
 
-分支：`experimental/dom-text-bridge`。这是独立开发与测试版本，未合并到 `main`，未发布为主版本，也未替换当前已登录浏览器或已安装 skill。稳定版本仍在 [main](https://github.com/JackBo04/selfguide/tree/main)。
+分支：`experimental/dom-text-bridge`。这是独立开发与测试版本，未合并到 `main`，未发布为主版本。可以独立安装，也可以备份后替换现有 skill 试用，复用浏览器登录。稳定版本仍在 [main](https://github.com/JackBo04/selfguide/tree/main)。
 
 | 操作 | 本分支做法 |
 | --- | --- |
