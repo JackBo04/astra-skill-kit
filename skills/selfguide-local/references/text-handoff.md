@@ -1,5 +1,7 @@
 # 文本交接异常与附件
 
+上传材料：先 `session.py stage --run <run> --file <材料>`，再 `bridge.py attach --run <run> --file <返回的上传副本> --expect-url <url> --out <检查文件>`；收到 `upload_confirmed:true` 后再发送消息。
+
 正常收发已由 `prepare`、`wait_reply.py`、`reply --source dom` 完成本轮标记和原文登记，无需另读模板或重写原文。
 
 格式检查失败时，先检查已保存的完整回复与本轮消息；不要自行补标记或重发任务。确属本轮、生成结束且正文完整时，可把核对依据写入文件，用 `session.py reply --run <run> --file <原文> --source dom --format-note-file <核对说明>` 留痕接收；下一轮提醒网页遵守格式。无法确认则保留暂停状态。
