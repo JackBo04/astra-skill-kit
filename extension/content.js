@@ -22,17 +22,22 @@
   const userContent = el => el?.querySelector('[data-testid="collapsible-user-message-content"]') || el;
   const userMatches = (el, expected) => {
     const content = userContent(el);
-    return !!content && (norm(text(content)) === norm(expected) || norm(content.textContent || '') === norm(expected));
+    // The sent bubble may collapse blank paragraphs. The composer still requires
+    // the exact original draft; this fallback only compares the rendered message.
+    const rendered = value => norm(value).replace(/\n{2,}/g,'\n');
+    return !!content && (norm(text(content)) === norm(expected) || norm(content.textContent || '') === norm(expected) ||
+      rendered(text(content)) === rendered(expected) || rendered(content.textContent || '') === rendered(expected));
   };
   const button = selectors => [...document.querySelectorAll(selectors)].find(visible);
   const stop = () => button('[data-testid="stop-button"],button[aria-label="Stop generating"],button[aria-label="停止生成"]');
   const sendButton = () => button('[data-testid="send-button"],button[aria-label="Send prompt"],button[aria-label="Send message"],button[aria-label="发送提示"],button[aria-label="发送消息"]');
+  const enabled = el => !!el && !el.disabled && el.getAttribute('aria-disabled') !== 'true';
   function composer() { const e = editor(); return e?.closest('form') || e?.parentElement?.parentElement; }
   function attachments() {
     const scope = composer();
     if (!scope) return [];
     return [...scope.querySelectorAll('[data-testid*="attachment"],[data-testid*="file"],button[aria-label*="Remove"],button[aria-label*="移除"]')]
-      .filter(visible).map(el => ({name:el.getAttribute('aria-label') || el.innerText, busy:!!el.querySelector('[role="progressbar"],.animate-spin')}));
+      .filter(visible).map(el => ({name:el.getAttribute('aria-label') || el.innerText || el.textContent || '', busy:!!el.querySelector('[role="progressbar"],.animate-spin')}));
   }
   function snapshot() {
     const users = userMessages(), assistants = assistantMessages(), e = editor();
@@ -110,8 +115,18 @@
     }
     if (command.action === 'send') {
       if (norm(draftText(e)) !== norm(command.text)) throw Error('草稿与本轮记录不一致，未发送。');
-      const send = sendButton();
-      if (!send || send.disabled || attachments().some(a=>a.busy) || composer()?.querySelector('[role="progressbar"],.animate-spin')) throw Error('发送按钮未就绪或附件仍在上传。');
+      // React may enable the button after the draft and attachment have rendered.
+      // Wait before the single click; an unconfirmed click is never retried here.
+      const readyDeadline = Date.now() + 20000;
+      let send;
+      while (true) {
+        requirePage(command);
+        if (norm(draftText(editor())) !== norm(command.text)) throw Error('草稿已改变，未发送。');
+        send = sendButton();
+        if (enabled(send) && !attachments().some(a=>a.busy) && !composer()?.querySelector('[role="progressbar"],.animate-spin')) break;
+        if (Date.now() >= readyDeadline) throw Error('发送按钮未就绪或附件仍在上传。');
+        await pause(300);
+      }
       const baseline = userMessages().length;
       send.click();
       const deadline = Date.now() + 20000;
@@ -124,6 +139,12 @@
     }
     if (command.action === 'attach') {
       const f = command.file;
+      const previousNames = new Set(attachments().map(a=>a.name));
+      const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      const dot = f.name.lastIndexOf('.');
+      const stem = dot > 0 ? f.name.slice(0,dot) : f.name, suffix = dot > 0 ? f.name.slice(dot) : '';
+      // ChatGPT may rename a repeated project filename to name(2).ext.
+      const filename = new RegExp('(?:^|[\\s:/])'+escape(stem)+'(?:\\s*\\(\\d+\\))?'+escape(suffix)+'(?:$|\\s)');
       const bytes = Uint8Array.from(atob(f.base64), c => c.charCodeAt(0));
       const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
       if (hash !== f.sha256) throw Error('附件传输校验失败。');
@@ -135,10 +156,11 @@
       const deadline = Date.now() + 20000;
       while (Date.now() < deadline) {
         requirePage(command);
-        const state = compact(), send = sendButton();
-        if (state.attachments.some(a=>a.name.includes(f.name)) && !state.attachments.some(a=>a.busy) &&
-            !composer()?.querySelector('[role="progressbar"],.animate-spin') && send && !send.disabled) {
-          return {...state,file_paste_requested:true,original_name:f.name,sha256:hash,upload_confirmed:true};
+        const state = compact();
+        const added = state.attachments.find(a=>!previousNames.has(a.name) && filename.test(a.name));
+        if (added && !state.attachments.some(a=>a.busy) &&
+            !composer()?.querySelector('[role="progressbar"],.animate-spin')) {
+          return {...state,file_paste_requested:true,original_name:f.name,observed_name:added.name,sha256:hash,upload_confirmed:true};
         }
         await pause(300);
       }

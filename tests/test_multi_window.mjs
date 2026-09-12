@@ -58,7 +58,7 @@ try {
   await chrome.storage.local.set({endpoint:cfg.endpoint,token:cfg.token,tabId:tab.id,enabled:true});
  },{endpoint:`http://127.0.0.1:${port}`,token:cfg.browser_token});
  async function newTask(label){
-  const file=path.join(tmp,label+'.txt');await fs.writeFile(file,'Task '+label+': use only your own attachment.');
+  const file=path.join(tmp,label+'.txt');await fs.writeFile(file,'Task '+label+': use only your own attachment.\n\n\nKeep this last line.');
   const run=session('new','--task-file',file,'--workspace',path.join(tmp,'runs')).run;
   const task={id:path.basename(run),run,url:project,marker:crypto.randomBytes(16).toString('hex')};
   const created=context.waitForEvent('page');
@@ -68,7 +68,7 @@ try {
   // DNS is blocked above; explicitly revisit after attaching to the new target.
   await task.page.goto(project);await task.page.waitForSelector('#prompt-textarea');
   task.window=opened.window_id;task.tab=opened.tab_id;
-  await task.page.evaluate(label=>{window.conversationId=label;window.collapsedMessage=true;},label);
+  await task.page.evaluate(label=>{window.conversationId=label;window.collapsedMessage=true;window.renameUploads=true;},label);
   const prepared=session('prepare','--run',run,'--file',file);task.prompt=prepared.file;task.text=await fs.readFile(task.prompt,'utf8');
   return task;
  }
@@ -79,7 +79,8 @@ try {
  assert.equal(await legacy.locator('#prompt-textarea').inputValue(),'KEEP THE ORIGINAL DRAFT');
  const again=await command(a,'open');assert.equal(again.reused,true);assert.equal(again.window_id,a.window);
  const attach=t=>command(t,'attach',{file:{name:'evidence.txt',mime:'text/plain',base64:Buffer.from(t.marker).toString('base64'),sha256:crypto.createHash('sha256').update(t.marker).digest('hex')}});
- await Promise.all([attach(a),attach(b)]);
+ const uploaded = await Promise.all([attach(a),attach(b)]);
+ assert.ok(uploaded.every(result=>result.observed_name.includes('evidence(2).txt')),'Accept newly added cards renamed by the webpage');
  // Lose the first acknowledgement for two different results, after the server saves them.
  await worker.evaluate(()=>{
   const fetchOriginal=globalThis.fetch;globalThis.droppedResults=new Set();

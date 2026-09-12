@@ -67,6 +67,7 @@ try{
  const bytes=Buffer.from('random fixture marker '+crypto.randomBytes(8).toString('hex'));
  const attached=await command('attach',{file:{name:'probe.txt',mime:'text/plain',base64:bytes.toString('base64'),sha256:crypto.createHash('sha256').update(bytes).digest('hex')}});
  assert.equal(attached.file_paste_requested,true);assert.equal(attached.upload_confirmed,true);assert.ok(attached.attachments.some(a=>a.name==='probe.txt'));
+ assert.equal(await page.locator('[data-testid=send-button]').getAttribute('aria-disabled'),'false','An attachment card alone is not upload readiness');
  // Match the live editor's paragraph structure and preserve intentional blank lines.
  const paragraphText='first\n\nsecond\nsoft break';
  await page.evaluate(()=>{
@@ -86,9 +87,17 @@ try{
  const prepared=session('prepare','--run',run,'--file',taskFile);
  const text=await fs.readFile(prepared.file,'utf8');
  const composed=await command('compose',{text});assert.equal(composed.draft_verified,true);assert.equal(composed.draft,undefined);
+ await page.evaluate(()=>document.querySelector('[data-testid=send-button]').setAttribute('aria-disabled','true'));
+ const disabledSend=await command('send',{text},true);assert.equal(disabledSend.status,'blocked');
+ assert.ok(disabledSend.error.includes('未就绪'),'Reject the disabled control before clicking, rather than timing out after an ignored click');
+ assert.equal((await command('status')).user_count,0);
+ assert.equal(await page.locator('#prompt-textarea').inputValue(),text);
+ assert.equal(await page.evaluate(()=>window.sendClicks || 0),0,'No click while the control is disabled');
+ await page.evaluate(()=>setTimeout(()=>document.querySelector('[data-testid=send-button]').setAttribute('aria-disabled','false'),1200));
  await page.evaluate(()=>window.replyDelay=6000);
  session('submitting','--run',run);
  const sent=await command('send',{text});assert.equal(sent.sent,true);assert.ok(sent.url.includes('/c/'));
+ assert.equal(await page.evaluate(()=>window.sendClicks),1,'Click exactly once after readiness');
  session('sent','--run',run,'--url',sent.url);
  const promptFile=path.join(tmp,'prompt.txt'),stateFile=path.join(tmp,'wait.json'),replyFile=path.join(tmp,'reply.txt');
  await fs.writeFile(promptFile,text);

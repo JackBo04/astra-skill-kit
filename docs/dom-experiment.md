@@ -1,6 +1,6 @@
-# DOM 文本通道实验
+# DOM 文本通道与独立测试
 
-本分支独立开发测试，不合并到主分支。默认独立安装；也可按下面的方法备份后替换现有 skill。任务档案单独保存，不复制浏览器 profile 或导出登录资料。
+DOM 通道现作为 v0.5.0 的默认收发方式。正常安装见 [服务器版](server-browser.md) 或 [本地版](local-browser.md)；下列步骤用于额外的独立测试环境。任务档案单独保存，复用浏览器登录。
 
 ## 服务器浏览器
 
@@ -19,7 +19,7 @@ python <实验skill>/scripts/bridge.py serve
 
 ## 替换当前服务器安装试用
 
-在实验分支工作区执行：
+在所选源码工作区执行：
 
 ```bash
 python3 tools/install.py server --name selfguide --update
