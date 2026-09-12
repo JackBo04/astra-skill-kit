@@ -58,6 +58,32 @@ class MailboxTest(unittest.TestCase):
   later,_=self.queue()
   with bridge.database() as db:db.execute('UPDATE jobs SET created=0 WHERE id=?',(later,))
   self.assertEqual(self.rpc('/job',{'id':later})[1]['state'],'expired')
+ def test_task_lanes_are_independent_and_claimed_in_order(self):
+  def enqueue(session,action='compose'):
+   ident=uuid.uuid4().hex
+   command={'session':session,'action':action,'expected_url':self.cfg['project_url'],'text':'unique '+session}
+   return ident,self.rpc('/command',{'id':ident,'command':command})
+  a,result=enqueue('task-a');self.assertEqual(result[0],200)
+  b,result=enqueue('task-b');self.assertEqual(result[0],200)
+  self.assertEqual(enqueue('task-a')[1][0],400)
+  self.assertEqual(self.rpc('/poll',{'exclude_sessions':['task-a']},role='browser')[1]['id'],b)
+  self.assertEqual(self.rpc('/poll',role='browser')[1]['id'],a)
+  read,_=enqueue('task-a','status')
+  self.assertTrue(self.rpc('/poll',role='browser')[1]['idle'])
+  self.rpc('/result',{'id':a,'result':{'draft_verified':True}},role='browser')
+  self.assertEqual(self.rpc('/poll',role='browser')[1]['id'],read)
+  # An unacknowledged operation in B cannot stop a new task C.
+  c,result=enqueue('task-c');self.assertEqual(result[0],200)
+  self.assertEqual(self.rpc('/poll',role='browser')[1]['id'],c)
+ def test_window_routes_require_valid_ids_and_never_reset_a_task(self):
+  for command in [
+   {'action':'open','expected_url':self.cfg['project_url']},
+   {'action':'status','session':'../other'},
+   {'action':'status','session':'legacy'},
+   {'action':'project','session':'task-a'},
+  ]:
+   with self.assertRaises(ValueError):bridge.validate(command,self.cfg)
+  self.assertEqual(self.rpc('/poll',{'exclude_sessions':'task-a'},role='browser')[0],400)
  def test_project_and_attachment_validation(self):
   with self.assertRaises(ValueError):bridge.validate({'action':'snapshot','expected_url':'https://chatgpt.com/c/other'},self.cfg)
   data=b'attachment';c={'action':'attach','expected_url':self.cfg['project_url'],'file':{'name':'input.txt','base64':base64.b64encode(data).decode(),'sha256':hashlib.sha256(data).hexdigest()}}

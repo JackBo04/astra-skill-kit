@@ -56,6 +56,8 @@ python3 ~/.agents/skills/selfguide-server/scripts/browserctl.py url
 
 需要首次人工登录时，先准备好可访问的远程入口和实际端口转发说明，再让用户登录。保留固定登录目录，不导出 Cookie、密码或验证码。显示号或端口冲突先识别已有进程，不删锁强启。
 
+服务器 Chrome 和项目准备好后，继续按 [服务器指南的 DOM 连接步骤](server-browser.md#连接-dom-文本桥接) 启动桥接并加载 `extension/`，默认端口 8766。桌面服务启动成功还不代表文本收发已连接。
+
 ## 3B. local：配置服务器桥接并交接本地操作
 
 本地版桥接没有第三方 Python 依赖。检查 `SELFGUIDE_LOCAL_HOME` 或默认 `~/.local/share/selfguide-local-bridge` 的配置是否存在；已有项目和配对信息应复用，不重复 init。缺少项目 URL 时可读取原服务器浏览器的 selfguide 项目配置，只提取 URL，不迁移登录资料。
@@ -69,9 +71,9 @@ python3 ~/.agents/skills/selfguide-local/scripts/bridge.py serve
 
 在服务器可执行部分完成后，一次性给用户以下信息：
 
-1. [本地版发布包下载页](https://github.com/JackBo04/selfguide/releases)，解压后要选其中的 `extension/` 文件夹。
+1. 与服务器所用提交对应的源码或本地版 ZIP 下载入口，解压后选择 `extension/` 文件夹；旧 Release 不代表当前 main。
 2. 可复制的 SSH 转发命令，使用用户实际 SSH 别名、目标地址或已知跳板配置。仅仅知道服务器主机名不代表它是用户电脑可达的地址；这项信息未知时才询问。
-3. Chrome／Edge 加载扩展、打开正确 selfguide 项目并绑定当前标签页的步骤。
+3. Chrome／Edge 加载扩展、打开正确 selfguide 项目并连接浏览器的步骤。
 4. 用户在自己服务器终端运行 `bridge.py pairing` 查看配对信息的方法。配对码填扩展，不发到 ChatGPT、不写入提交或公开报告。
 
 本地转发模板如下，必须在用户自己的电脑终端运行：

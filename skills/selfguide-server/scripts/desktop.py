@@ -91,6 +91,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
     shot = sub.add_parser('screenshot'); shot.add_argument('--out', type=Path)
+    shot.add_argument('--reason', required=True, help='Describe the exceptional condition being diagnosed.')
     sub.add_parser('url')
     go = sub.add_parser('goto'); go.add_argument('url')
     click = sub.add_parser('click'); click.add_argument('x', type=int); click.add_argument('y', type=int)
@@ -112,7 +113,7 @@ def main():
             output.parent.mkdir(parents=True, exist_ok=True)
             image = ImageGrab.grab(xdisplay=environment()['DISPLAY'])
             image.save(output)
-            print(json.dumps({'path': str(output.resolve()), 'size': image.size}))
+            print(json.dumps({'path': str(output.resolve()), 'size': image.size, 'diagnostic_reason': args.reason}))
             return
         if args.action == 'url':
             print(current_url()); return

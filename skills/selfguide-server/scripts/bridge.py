@@ -17,9 +17,9 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 import uuid
 
-from config_paths import local_home
+from config_paths import browser_home
 
-BASE = Path(os.environ['SELFGUIDE_BRIDGE_HOME']).expanduser() if os.environ.get('SELFGUIDE_BRIDGE_HOME') else local_home()
+BASE = Path(os.environ['SELFGUIDE_BRIDGE_HOME']).expanduser() if os.environ.get('SELFGUIDE_BRIDGE_HOME') else browser_home() / 'dom-bridge'
 LIMIT = 12 * 1024 * 1024
 ACTIONS = {'status', 'snapshot', 'project', 'compose', 'send', 'reply', 'reply-status', 'attach', 'open', 'focus'}
 MUTATIONS = ACTIONS - {'status', 'snapshot', 'reply', 'reply-status'}
@@ -195,7 +195,7 @@ def main():
     os.umask(0o077)
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest='action', required=True)
-    init = sub.add_parser('init'); init.add_argument('--project-url', required=True); init.add_argument('--port', type=int, default=8765)
+    init = sub.add_parser('init'); init.add_argument('--project-url', required=True); init.add_argument('--port', type=int, default=8766)
     sub.add_parser('serve'); sub.add_parser('pairing')
     job = sub.add_parser('job'); job.add_argument('id')
     resolve = sub.add_parser('resolve'); resolve.add_argument('id'); resolve.add_argument('--note-file', type=Path, required=True)

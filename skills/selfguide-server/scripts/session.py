@@ -37,13 +37,10 @@ def reply_markers(state, number):
 
 def reply_instruction(state, number):
     begin, end = reply_markers(state, number)
-    return ("\n\n[SelfGuide 文本交接要求]\n"
-            "请把本轮完整反馈放在一个可一键复制的 text 代码块里，块外不放执行所需内容。\n"
-            "在下列首尾标记之间写清：信息需求、下一步动作、验证要求或验收结论。\n"
-            "不要省略代码、路径、条件；代码块内部不再使用三反引号。\n"
-            "涉及正文写作、翻译或润色，请你自主组织并直接交付正文；Codex 按需补充背景和材料、协助保存排版，需要信息请向它索取。\n"
-            "长文件可另附真实下载文件，但在此块中注明用途；无法生成附件就提供完整文本。\n"
+    return ("\n\n[SelfGuide] 本轮完整反馈放入一个 text 代码块，包含下列首尾标记；"
+            "块外不放执行所需内容，内部不嵌套三反引号。\n"
             + begin + "\n<完整反馈正文>\n" + end + "\n")
+
 
 def validate_reply(text, state):
     lines = text.strip().splitlines()
@@ -69,6 +66,8 @@ def main():
         item = sub.add_parser(action); item.add_argument('--run', type=Path, required=True)
         if action in ['stage', 'prepare', 'reply']:
             item.add_argument('--file', type=Path, required=True)
+        if action == 'status':
+            item.add_argument('--brief', action='store_true', help='Return current handoff paths without full history.')
         if action == 'reply':
             item.add_argument('--source', choices=['clipboard', 'dom', 'download'])
             item.add_argument('--format-note-file', type=Path)
@@ -79,7 +78,9 @@ def main():
             item.add_argument('--note-file', type=Path, required=True)
     args = parser.parse_args()
     if args.action == 'new':
-        project = json.loads(project_file(BASE).read_text())
+        dom_config = Path(os.environ.get('SELFGUIDE_BRIDGE_HOME', BASE / 'dom-bridge')).expanduser() / 'config.json'
+        project = ({'name':'selfguide','url':json.loads(dom_config.read_text())['project_url']}
+                   if dom_config.exists() else json.loads(project_file(BASE).read_text()))
         if project['name'] not in ['selfguide', 'astra']:
             raise ValueError('All new conversations must belong to selfguide.')
         task = text_file(args.task_file)
@@ -101,6 +102,17 @@ def main():
         state = json.loads(path.read_text())
         result = {'run': str(run)}
         if args.action == 'status':
+            if args.brief:
+                # Keep recovery output bounded as the on-disk audit history grows.
+                result = {key: state[key] for key in (
+                    'id', 'project_url', 'conversation_url', 'phase', 'round',
+                    'resume_phase', 'latest_note') if key in state}
+                current = state.get('rounds', [])[-1:]
+                result['current'] = {key: current[0][key] for key in (
+                    'number', 'outgoing', 'incoming', 'incoming_source',
+                    'reply_format_valid') if key in current[0]} if current else None
+                result['run'] = str(run)
+                print(json.dumps(result, ensure_ascii=False)); return
             print(json.dumps(state, ensure_ascii=False, indent=2)); return
         if state['phase'] == 'complete':
             raise ValueError('This task is complete; create a new task record for new work.')

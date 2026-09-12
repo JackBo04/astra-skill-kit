@@ -1,6 +1,6 @@
 # 服务器浏览器版
 
-此版本保留现有做法：Codex 和专用 Chrome 都在服务器上。你在自己电脑的浏览器或 Codex 侧边浏览器中打开远程画面，首次自行登录，然后保持服务器浏览器运行。
+Codex 和专用 Chrome 都在服务器上。你在自己电脑的浏览器或 Codex 侧边浏览器中打开远程画面，首次自行登录，然后保持服务器浏览器运行。
 
 ## 已有服务器浏览器时
 
@@ -64,7 +64,20 @@ ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:6080:127.0.0.1:6080 your-server
 
 首次在画面中由你输入邮箱、密码或验证码；遇到人机验证也由你操作。该专用 Chrome 使用固定 `profile-manual/`，后续任务复用登录。关闭远程查看页面不会主动关闭服务器 Chrome；网站要求重新登录时仍需人工处理，不能保证登录永不失效。
 
-新任务在 selfguide 中新建会话，材料和结果保存在当前工作区 `selfguide/tasks/`。附件通过服务器系统文件剪贴板上传。原部署的原生文件选择弹窗不可用，已用文件粘贴真实验证 TXT 和 JSON，因此无需为上传重启浏览器。
+新任务在 selfguide 中新建会话，每个任务自动打开独立窗口，材料和结果默认保存在当前工作区 `selfguide/tasks/`，也可指定其他工作区。扩展上传选定附件并读取完整回复；正常收发不依赖截图。
+
+## 连接 DOM 文本桥接
+
+在服务器安装目录的 `extension/` 加载已解压扩展（Chrome 120+）。已有 v0.5.0 配置时复用，首次配置运行：
+
+```bash
+python3 ~/.agents/skills/selfguide-server/scripts/bridge.py init --project-url '<实际selfguide项目URL>' --port 8766
+python3 ~/.agents/skills/selfguide-server/scripts/bridge.py serve
+```
+
+桥接需保持运行；默认配置在 `~/.local/share/selfguide-browser/dom-bridge/`。另一个服务器终端运行 `bridge.py pairing`，在服务器 Chrome 打开该项目，点击扩展，地址填写 `http://127.0.0.1:8766`、填入配对码并点“连接浏览器”。配对一次后新任务各用独立窗口，共用已有登录。扩展也在服务器，因此这个端口无需转发到用户电脑。
+
+任务窗口自动平铺；保持运行窗口可见，最小化或完全遮挡可能影响网页刷新。正常命令和等待流程见 [收发流程](../skills/selfguide-server/references/dom-bridge.md)。
 
 ## 验证与恢复
 

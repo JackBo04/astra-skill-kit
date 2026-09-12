@@ -1,266 +1,158 @@
 <p align="center">
-  <img src="docs/assets/hero.svg" alt="SelfGuide — Guide. Act. Reflect." width="100%">
+  <img src="docs/assets/hero.svg" alt="SelfGuide" width="760">
 </p>
 
 <p align="center">
-  <strong>自己指导，自己执行，持续改进。</strong><br>
-  ChatGPT 主导 · Codex 执行 · 真实反馈驱动下一步
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <img alt="Preview" src="https://img.shields.io/badge/status-Preview-orange.svg">
+  <img alt="v0.5.0" src="https://img.shields.io/badge/version-v0.5.0-informational.svg">
 </p>
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-9ff6dd?style=flat-square&amp;labelColor=182338" alt="License: MIT"></a>
-  <a href="https://github.com/JackBo04/selfguide/releases"><img src="https://img.shields.io/badge/Release-v0.4.0%20Preview-a6b5ff?style=flat-square&amp;labelColor=182338" alt="Release: v0.4.0 Preview"></a>
-  <a href="docs/server-browser.md"><img src="https://img.shields.io/badge/Python-3.10%2B-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Python 3.10 or newer"></a>
-  <a href="docs/local-browser.md"><img src="https://img.shields.io/badge/Browser-Chrome%20%2F%20Edge-b8c6dd?style=flat-square&amp;labelColor=182338" alt="Local browser: Chrome or Edge"></a>
-</p>
+# SelfGuide
 
-<p align="center">
-  <a href="#quickstart">快速开始</a> ·
-  <a href="docs/agent-install.md">Agent 安装规范</a> ·
-  <a href="https://github.com/JackBo04/selfguide/releases">下载安装包</a> ·
-  <a href="docs/validation.md">验证记录</a> ·
-  <a href="https://github.com/JackBo04/selfguide/issues">反馈问题</a>
-</p>
+SelfGuide 是一个面向 **ChatGPT 网页版 × Codex** 的自指导工作流：网页负责方案、按需追问、正文写作与验收，Codex 在你选择的服务器持续执行；执行结果再回到网页，形成可恢复的迭代闭环。
 
----
+它面向长任务、实验迭代、论文写作和多任务并行。每个任务会在用户配置的 SelfGuide ChatGPT 项目中自动创建独立 Chrome 窗口；同一任务继续沿用原会话。队列、附件、草稿、回复与等待状态分别管理，但共享同一网页登录和账户额度。
 
-## 让下一步，来自上一步的真实结果
+> 当前为 **v0.5.0 Preview**。源码以 `main` 为准；旧 Release 不代表最新版。
 
-**SelfGuide 把指导、执行和反馈组织成一个持续运行的协作循环。** 你给出目标和验收标准，网页版负责方案、信息需求和关键决策；Codex 从真实环境取证，执行步骤，独立验证，再把文件与结果交回网页评审。
+## 为什么用 SelfGuide
 
-缺少一份日志？网页版向 Codex 提出需求，Codex 读取并补充。实验结果与预期不符？上传实际证据，让网页版据此更新方案。整个过程围绕同一个任务持续推进，需要你提供独有信息或作出关键决定时再交给你。
+SelfGuide 将复杂任务拆成可连续执行和验收的阶段：网页负责确定当前目标与下一步，Codex 完成该阶段的实际工作并回传结果，再根据验收继续推进，直到用户目标完成。
 
-| 网页主导 | 执行有据 | 过程可恢复 |
-| :--- | :--- | :--- |
-| 方案、追问、关键取舍和验收由网页版主导 | Codex 读取实际文件，提交真实附件和独立验证结果 | 每个任务保存会话地址、完整收发和发送状态 |
-| 默认网页版 **xhigh**，难题按需选择 **Pro** | 工作始终在你选定连接的服务器上完成 | 中断后核对原会话和记录，避免盲目重复发送 |
+多任务之间使用独立窗口和任务状态，适合同时推进论文写作、代码修改和实验检查；同一任务始终回到原会话，避免每轮重新解释背景。
 
-## 自指导循环如何工作
+## 工作方式
 
-<p align="center">
-  <img src="docs/assets/workflow.svg" alt="用户定义任务，ChatGPT 指导，服务器 Codex 执行，验证结果返回网页继续评审。" width="100%">
-</p>
+| 角色 | 主要职责 |
+| --- | --- |
+| ChatGPT 网页 | 主导方案、按需追问、正文写作、结果验收 |
+| Codex | 连续实施一个阶段、补充材料、执行命令与回传结果 |
+| SelfGuide | 管理窗口、桥接消息/附件、保存状态并驱动下一轮 |
 
-每个新任务都在配置的 ChatGPT 项目中新建专用会话（现有部署名为 **selfguide**）。方案、补充信息、执行问题和结果评审沿用这条会话，服务器同步保存任务档案。
+典型循环：
 
-**已有真实验证：** 合成 TXT 上传 → 网页读出附件独有随机码 → 指导生成 JSON → Codex 独立核对 → JSON 结果回传 → 网页验收通过。[查看验证范围 →](docs/validation.md)
+    用户目标
+      → ChatGPT 给出下一阶段指导
+      → Codex 在服务器执行
+      → SelfGuide 回传文字、附件与状态
+      → ChatGPT 验收并决定下一步
+      → 达成目标后结束
 
-> **当前状态 · Preview**
->
-> 服务器方案已有真实 ChatGPT 闭环验证。本地浏览器版已通过真实 Chromium 扩展与模拟页面联调，仍需在用户电脑的真实 ChatGPT 页面完成首次验收；本地扩展目前不支持自动切换网页档位。
+正常情况下，SelfGuide 通过 DOM 直接读取完整文字，并等待网页生成完成；只有文本无法诊断的异常才使用截图。回复会保存到本地文件，任务、轮次和发送状态均可恢复，避免盲目重发。
 
-<a id="quickstart"></a>
+## 多任务与任务目录
 
-## 快速开始：把安装交给 Agent
+每个任务拥有独立窗口和独立状态，同一任务保持原会话。窗口会自动平铺；运行中的窗口应保持可见，最小化或完全遮挡可能影响网页刷新。
 
-在**已经连接目标服务器的 Codex／Agent 会话**中，复制对应指令即可开始。Agent 会读取安装规范，完成可执行的配置，并说明需要你处理的步骤。
+默认任务目录：
 
-### ① 选择浏览器的位置
+    selfguide/tasks/<id>/
+      task.txt
+      state.json
+      uploads/
+      messages/
+      feedback/
+      outputs/
+      checks/
 
-| | 服务器浏览器版 | 本地浏览器版 |
-| :--- | :--- | :--- |
-| **Codex 执行位置** | 你连接的服务器 | 你连接的服务器 |
-| **ChatGPT 浏览器** | 服务器专用 Chrome，通过远程画面查看 | 自己电脑上的 Chrome／Edge |
-| **连接方式** | 虚拟桌面与远程查看入口 | 浏览器扩展与 SSH 隧道 |
-| **适合** | 复用当前服务器浏览器，让它持续运行 | 使用自己电脑的浏览器登录 |
-| **调用名称** | `$selfguide-server` | `$selfguide-local` |
-| **详细说明** | [服务器版安装指南](docs/server-browser.md) | [本地版安装指南](docs/local-browser.md) |
+也可以为任务指定 workspace。网页登录使用固定 profile 复用，但不能保证永不重新登录；登录和人机验证由用户操作。SelfGuide 不会自行唤醒 Codex，源码也不包含账户凭据或聊天内容。
 
-### ② 复制安装指令
+## Server 与 Local
 
-**服务器浏览器版**
+无论哪一版，**Codex 都在用户选择的服务器执行工作**。
 
-```text
-请在当前连接的服务器上安装并配置：
-https://github.com/JackBo04/selfguide
+**server**：Chrome、扩展和桥接均运行在服务器，并提供虚拟桌面远程入口。扩展默认连接：
 
-选择 server 版本，先读取 README.md 和 docs/agent-install.md，按规范执行。
-复用已有 selfguide 项目、浏览器和登录状态，完成安装、配置及合成附件的真实验收。
-普通步骤和可逆修复直接处理；只有缺少必要信息、需要我登录或决定时再问我。
-最后给我安装位置、实际验证结果和后续任务调用示例。
-```
+    http://127.0.0.1:8766
 
-**本地浏览器版**
+**local**：Chrome 和扩展运行在自己的电脑，通过 SSH 隧道连接服务器桥接。请在自己的电脑终端运行：
 
-```text
-请在当前连接的服务器上安装并配置：
-https://github.com/JackBo04/selfguide
+    ssh -N -L 127.0.0.1:8765:127.0.0.1:8765 your-server
 
-选择 local 版本，先读取 README.md 和 docs/agent-install.md，按规范执行。
-Codex 继续在服务器干活，ChatGPT 使用我电脑上的 Chrome／Edge。
-先完成服务器配置，再一次性给我扩展下载入口、SSH 转发命令和配对步骤。
-连接后用合成附件完成两轮真实验收。普通步骤直接处理，必要时再问我。
-分别报告服务器安装、本地连接和真实验收的状态。
-```
+本地版扩展默认连接：
 
-初次登录、人机验证，以及自己电脑上的扩展安装和配对，仍需你亲自完成。后续复用已有浏览器登录；网站要求重新验证时再处理。
+    http://127.0.0.1:8765
 
-<details>
-<summary><strong>更喜欢终端？展开手动安装</strong></summary>
+网页默认使用 xhigh / Extra High；更难的问题可使用账户可用的 Pro。它只影响 ChatGPT 网页，不会改变 Codex 自身模型。扩展目前不支持自动切档。
 
-在服务器终端运行。公开仓库无需 GitHub 登录；需要 Git 和 Python 3.10+。
+## 安装
 
-```bash
-git clone https://github.com/JackBo04/selfguide.git
-cd selfguide
+要求 Python 3.10+、Chrome 120+。服务器桌面的 Node 20+、Xvfb 等依赖见文档。
 
-# 二选一
-python3 tools/install.py server
-python3 tools/install.py local
-```
+Server：
 
-也可从 [Releases](https://github.com/JackBo04/selfguide/releases) 下载对应 ZIP，解压后执行包内 `tools/install.py`。
+    git clone https://github.com/JackBo04/selfguide.git
+    cd selfguide
+    python3 tools/install.py server
 
-新版统一使用 `$selfguide-server` 和 `$selfguide-local` 调用名，聊天项目名为 `selfguide`。从旧版升级时复用现有项目 ID、登录资料和任务记录，迁移步骤见 [命名迁移](docs/migration.md)。安装器默认写入 `~/.agents/skills/`；相同内容重复安装直接复用，升级用 `--update` 自动备份后更新。以上命令完成 skill 安装，浏览器服务、项目、SSH 和扩展仍需按 [服务器指南](docs/server-browser.md) 或 [本地指南](docs/local-browser.md) 配置。安装后开启新的 Codex 会话，让它发现新增 skill。
+Local：
 
-</details>
+    git clone https://github.com/JackBo04/selfguide.git
+    cd selfguide
+    python3 tools/install.py local
 
-### 重复安装／升级
+默认安装位置：
 
-在 **Codex 连接的服务器终端**，进入已经克隆的仓库：
+    ~/.agents/skills/selfguide-server
+    ~/.agents/skills/selfguide-local
 
-```bash
-git pull --ff-only
-python3 tools/install.py local --update
-```
+调用：
 
-服务器浏览器版将 `local` 换成 `server`。ZIP 用户进入新包目录，直接运行第二条命令。相同内容会提示已是最新；有变化时先备份，再更新发行文件，保留额外本地文件。浏览器登录、配对和任务记录存放在独立目录，安装器不会清空它们。
+    $selfguide-server
+    $selfguide-local
 
-本地浏览器扩展还需在自己电脑更新：将新版 `extension/` 的内容覆盖到原固定目录，在扩展管理页点“重新加载”，处理完未确认操作后刷新绑定标签页，再连接。通常无需卸载或重新登录；更换扩展目录或扩展 ID 时可能需要重新填入原配对信息。
+如需保留旧单机调用名：
 
-[完整升级与恢复说明 →](docs/update.md)
+    python3 tools/install.py server --name selfguide --update
 
-### ③ 给出任务和完成标准
+已有旧部署可继续使用：
 
-```text
-使用 $selfguide-server。
+    $selfguide
 
-任务：分析这次实验失败的原因，并完成可验证的修复。
-材料：<服务器上的代码、日志和结果路径>
-验收标准：<预期行为、指标或必须通过的检查>
+更新已有仓库：
 
-让 selfguide 网页版主导方案；缺失信息由你取证并补充。
-按反馈持续执行，提交真实结果和验证证据，只有需要我决定时才问我。
-```
+    git pull --ff-only
+    python3 tools/install.py server --update
 
-本地浏览器版将第一行换成 `$selfguide-local`。你可以直接给服务器文件路径，也可以将候选材料放进 `selfguide/inbox/` 再说明任务；Codex 按任务选择材料，放入文件本身不会触发上传。
+Local 模式使用：
 
-## 明确分工，保留你的控制权
+    git pull --ff-only
+    python3 tools/install.py local --update
 
-| 职责 | 负责什么 |
-| :--- | :--- |
-| **你** | 定义目标、约束与完成标准，处理独有信息和关键决定 |
-| **网页版 ChatGPT** | 主导方案、信息需求与验收，负责正文起草和实质改写 |
-| **Codex** | 读取环境与文件，按需求补充事实，执行、修复、独立验证和反馈 |
+首次使用还需要完成桥接、浏览器扩展和网页登录配置；**只安装 SKILL.md 并不代表已经连通。**
 
-日常信息收集和可逆修复由 Codex 处理；关键路线与假设变化带着证据交回网页讨论。网页建议受原任务范围约束，Codex 仍需核对实际情况。
+## 让 Agent 帮你安装
 
-**档位策略：网页版默认 xhigh（Extra High），明显困难的推理问题按需选择网页版 Pro。** 这个判断由 Codex 处理，不修改 Codex 自身的模型或推理档位，也不代表升级订阅。服务器版通过可见网页控件操作；本地扩展尚无自动切档命令，需要本地用户或可用的本地操作工具配合。
+可直接复制给 Agent：
 
-[阅读完整分工、切档规则与交接模板 →](https://github.com/JackBo04/selfguide/blob/main/skills/selfguide-server/references/leadership.md)
+    请在当前已连接的服务器上安装或更新 SelfGuide，模式选择为 <server|local>。
+    仓库地址：https://github.com/JackBo04/selfguide。
+    请先检查是否已有该仓库：已有则复用并安全更新，没有则克隆；进入仓库后先完整阅读 docs/agent-install.md，再严格按照其中说明完成你能够执行的安装、配置检查和合成验收。
+    尽量复用现有网页登录、浏览器配置和已有 SelfGuide 任务，不要无必要创建新登录或丢弃任务状态。
+    只有确实需要用户登录、人机验证，或存在必须由用户决定的选项时再询问用户。
 
-## 三个模块，一套协作方式
+## 当前能力
 
-| 模块 | 当前状态 | 分工 |
-| :--- | :--- | :--- |
-| **写作** | 已启用 | 网页版起草和修改，自主组织结构与表达；Codex 按需补充材料，保存和排版 |
-| **绘图** | 预留，暂空 | 后续补充 |
-| **实验迭代** | 预留，暂空 | 后续补充 |
+- **写作模块**：已启用。
+- **绘图模块**：预留，尚未实现。
+- **实验迭代模块**：预留，尚未实现。
 
-模块决定做什么，server／local 决定浏览器在哪里。当前只配置了写作模块；另外两个保留空位。
+预留模块不是已实现能力；后续会在完成实现和验证后再更新说明。
 
-```text
-使用 $selfguide-local 的写作模块，帮我完成：<要写的内容>。
-```
+## 验证状态
 
-服务器浏览器版换成 `$selfguide-server`；当前原单机部署使用 `$selfguide`。网页端可以边写边向 Codex 索取需要的信息，不必等材料全部齐备才开始。
+当前已有 **19 项 Python 回归测试**。server 与 local 均通过受控 Chromium 下的扩展收发、附件、恢复和多窗口隔离测试；真实服务器也完成了多窗口文字闭环与真实附件双向交接。
 
-[查看模块索引 →](skills/selfguide-server/modules/index.md) · [写作模块 →](skills/selfguide-server/modules/writing.md)
+本地用户电脑仍未完成实机验收，因此项目不宣称所有平台均已验证。Preview 阶段建议在重要任务中保留原始材料和执行记录。
 
-## 反馈直接交接原文
+## 文档
 
-**网页版给出可一键复制的完整文本块，Codex 保存原文后执行。** 服务器版通过复制按钮获取，本地版直接读取网页文本；截图用于定位控件和确认状态。长代码、报告可另附文件，普通反馈无需每轮下载附件。
+- [Server 浏览器](docs/server-browser.md)
+- [Local 浏览器](docs/local-browser.md)
+- [Agent 安装](docs/agent-install.md)
+- [更新指南](docs/update.md)
+- [验证说明](docs/validation.md)
+- [MIT License](LICENSE)
 
-每轮自动附上任务号、轮次和首尾标记，接收时检查，原文与来源记录保存在 `feedback/` 和 `state.json`。遇到格式不符，先重取并核对；确需例外时留下核对说明，避免靠截图猜测或补全指令。本地扩展暂不支持下载文件自动回传服务器。
-
-[查看文本交接与恢复规则 →](skills/selfguide-server/references/text-handoff.md)
-
-## 每一步，都留下可追溯的证据
-
-```text
-selfguide/
-├── inbox/                    候选材料，按需建立
-└── tasks/<任务 ID>/
-    ├── task.txt              目标与验收要求
-    ├── state.json            进度、轮次与网页会话地址
-    ├── uploads/              选定附件副本与来源校验清单
-    ├── messages/             发给网页版的说明
-    ├── feedback/             网页版完整回复
-    ├── outputs/              交付物
-    └── checks/               独立验证与恢复证据
-```
-
-原研究文件留在原处。浏览器登录状态与任务材料分开保存，源码和发行包不包含账户凭据、真实聊天记录或研究数据。
-
-<details>
-<summary><strong>常见问题</strong></summary>
-
-**服务器没有图形界面，可以用吗？**
-
-服务器版使用 Xvfb 提供虚拟桌面；本地版的服务器桥接仅依赖 Python 标准库，浏览器运行在自己电脑上。完整依赖见对应安装指南。
-
-**需要每次登录吗？**
-
-默认复用已有登录。网站使会话失效或要求验证时需人工处理，不能保证永不重新登录。
-
-**电脑可以休眠或关机吗？**
-
-本地版需要电脑、浏览器与 SSH 隧道保持运行；断线后按任务记录恢复。服务器版的远程查看页面可以关闭，服务器 Chrome 继续运行。
-
-**发送超时怎么办？**
-
-检查原任务状态和网页，不直接重复提交。发送结果不明与发送失败是两种不同状态。
-
-**支持大文件吗？**
-
-本地桥接默认单文件最多 8 MiB，这是程序限制。大材料先提取相关样本、摘要或图表；实际上传仍以网页支持情况为准。
-
-**会自动启动 Codex 吗？**
-
-不会。你需要在运行中的 Codex 会话里给出任务；浏览器和桥接服务负责协助收发。
-
-</details>
-
-## 参与改进
-
-欢迎通过 [Issues](https://github.com/JackBo04/selfguide/issues) 提交可复现的问题，或通过 Pull Request 改进实现。以下方向尤其有帮助：
-
-- **页面适配：** 网页输入框、附件卡片、回复完成标记与档位控件。
-- **本地版验证：** 不同系统的 Chrome／Edge、SSH 连接及真实账户联调。
-- **恢复体验：** 断线、页面重载与发送结果不明时的可观测性。
-- **文档与示例：** 更易复现的安装步骤和合成任务案例。
-
-反馈问题时附版本、系统、浏览器、复现步骤和经过脱敏的错误信息。请勿提交登录资料、配对码或私人聊天内容。
-
-<details>
-<summary><strong>开发与验证命令</strong></summary>
-
-在完整仓库源码目录运行。需要 Python 3.10+；Node.js 20+ 用于服务器桌面服务和浏览器测试，扩展本身无需编译。
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-npm ci
-npx playwright install chromium
-node tests/test_extension.mjs
-python3 tools/package.py
-```
-
-打包生成两个 ZIP 和 `dist/SHA256SUMS`，仅收集明确列出的源码和说明目录。扩展测试使用模拟页面，不代替真实账户验收。[完整验证记录 →](docs/validation.md)
-
-</details>
-
-## License
-
-[MIT](LICENSE) © Huangbo Zou。允许使用、修改和分发，需保留许可证与版权声明；依赖软件遵循各自许可证。
-
-<sub>参考：[OpenAI skill 文档](https://developers.openai.com/codex/skills) · [Chrome 扩展消息传递](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) · [扩展网络请求](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests)</sub>
+项目仓库：[github.com/JackBo04/selfguide](https://github.com/JackBo04/selfguide)
